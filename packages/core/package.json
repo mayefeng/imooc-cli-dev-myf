@@ -1,6 +1,6 @@
 {
   "name": "@imooc-cli-dev-myf/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "imooc-cli-dev-myf core",
   "author": "mayefeng <mayefeng@boulderaitech.com>",
   "homepage": "",
@@ -20,7 +20,7 @@
     "test": "echo \"Run testting from core\""
   },
   "dependencies": {
-    "@imooc-cli-dev-myf/utils": "^1.0.2"
+    "@imooc-cli-dev-myf/utils": "^1.0.3"
   },
   "gitHead": "947e88ca0f9d3b9b4a8a3c62b38bcf4da5b88ac3"
 }
