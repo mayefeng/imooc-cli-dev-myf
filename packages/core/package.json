@@ -20,7 +20,7 @@
     "test": "echo \"Run testting from core\""
   },
   "dependencies": {
-    "@imooc-cli-dev-myf/utils": "^1.0.3"
+    "@imooc-cli-dev-myf/utils": "^1.0.4"
   },
   "gitHead": "b162764607513499ee7df7e4365b377152704abd",
   "publishConfig": {
