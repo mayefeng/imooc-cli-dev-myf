@@ -6,6 +6,9 @@
   "homepage": "",
   "license": "ISC",
   "main": "lib/core.js",
+  "bin": {
+    "imooc-cli-dev-myf": "bin/index.js"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -18,5 +21,6 @@
   },
   "dependencies": {
     "@imooc-cli-dev-myf/utils": "^1.0.2"
-  }
+  },
+  "gitHead": "947e88ca0f9d3b9b4a8a3c62b38bcf4da5b88ac3"
 }
