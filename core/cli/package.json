@@ -20,7 +20,10 @@
     "test": "echo \"Run testting from core\""
   },
   "dependencies": {
-    "@imooc-cli-dev-myf/utils": "^1.0.4"
+    "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
+    "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "import-local": "^3.0.2",
+    "npmlog": "^5.0.0"
   },
   "gitHead": "b162764607513499ee7df7e4365b377152704abd",
   "publishConfig": {
