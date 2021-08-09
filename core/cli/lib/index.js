@@ -7,7 +7,9 @@ const semver = require('semver')
 const colors = require('colors/safe')
 const userHome = require('user-home')
 const pathExists = require('path-exists').sync
+const commander = require('commander')
 const log = require('@imooc-cli-dev-myf/log')
+const init = require('@imooc-cli-dev-myf/init')
 
 const pkg = require('../package.json');
 const constant = require('./const');
@@ -15,18 +17,62 @@ const getNpmInfo = require('@imooc-cli-dev-myf/get-npm-info');
 
 let args, config;
 
+// 实例化一个脚手架的对象
+const program = new commander.Command()
+
 async function core() {
     try {
     checkPkgVersion()
     checkNodeVersion()
     checkRoot()
     checkUserHome()
-    checkInputArgs()
+    // checkInputArgs()
     checkEnv()
     await checkGlobalUpdate()
     // log.verbose('debug', 'test debug log')
+    regiserCommand()
     } catch (e) {
         log.error(e.message)
+    }
+}
+
+function regiserCommand() {
+    program
+        .name(Object.keys(pkg.bin)[0])
+        .usage('<command> [options]')
+        .version(pkg.version)
+        .option('-d, --debug', '是否开启调试模式', false)
+
+    program
+        .command('init [projectName]')
+        .option('-f, --force', '是否强制初始化项目')
+        .action(init)
+
+    // 开启debug模式的监听
+    program.on('option:debug', () => {
+        console.log(program.opts().debug)
+        if (program.opts().debug) {
+            process.env.LOG_LEVEL = 'verbose'
+        } else {
+            process.env.LOG_LEVEL = 'info'
+        }
+        log.level = process.env.LOG_LEVEL
+    })
+    
+    // 对未知命令的监听
+    program.on('command:*', (obj) => {
+        const availableCommands = program.commands.map(cmd => cmd.name())
+        console.log(colors.red(`未知的命令${obj[0]}`))
+        if (availableCommands.length > 0) {
+            console.log(colors.red(`可用的命令${availableCommands.join(',')}`))
+        }
+    })
+
+    program.parse(process.argv)
+
+    if (program.args?.length < 1) {
+        program.outputHelp()
+        console.log()
     }
 }
 
@@ -38,9 +84,9 @@ async function checkGlobalUpdate() {
     const { getNpmSemverVersion } = require('@imooc-cli-dev-myf/get-npm-info')
     const lastVersion = await getNpmSemverVersion(currentVersion, npmName)
     if (lastVersion && semver.gt(lastVersion, currentVersion)) {
-        log.warn('更新提示', colors.yellow(`
-        请手动更新 ${npmName}， 当前版本：${currentVersion}，最新版本${lastVersion}
-        更新命令：npm install -g ${npmName}`))
+        // log.warn('更新提示', colors.yellow(`
+        // 请手动更新 ${npmName}， 当前版本：${currentVersion}，最新版本${lastVersion}
+        // 更新命令：npm install -g ${npmName}`))
     }
     // 3.提取所有版本号，比对哪些版本号大于当前版本号
     // 4.获取最新的版本号，提示用户更新到该版本
@@ -120,5 +166,5 @@ function checkPkgVersion() {
     // console.log(pkg.version)
     // log.success('test', 'success...');
     // log.verbose('debug', 'debug...')
-    log.notice('cli', pkg.version)
+    // log.notice('cli', pkg.version)
 }
