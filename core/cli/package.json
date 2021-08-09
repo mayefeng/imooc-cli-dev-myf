@@ -1,5 +1,5 @@
 {
-  "name": "@imooc-cli-dev-myf/core",
+  "name": "@imooc-cli/core",
   "version": "1.0.4",
   "description": "imooc-cli-dev-myf core",
   "author": "mayefeng <mayefeng@boulderaitech.com>",
@@ -20,10 +20,18 @@
     "test": "echo \"Run testting from core\""
   },
   "dependencies": {
-    "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
+    "@imooc-cli-dev-myf/get-npm-info": "file:../../utils/get-npm-info",
+    "colors": "^1.4.0",
+    "dotenv": "^10.0.0",
     "import-local": "^3.0.2",
-    "npmlog": "^5.0.0"
+    "minimist": "^1.2.5",
+    "npmlog": "^5.0.0",
+    "path-exists": "^4.0.0",
+    "root-check": "1.0.0",
+    "semver": "^7.3.5",
+    "user-home": "^3.0.0"
   },
   "gitHead": "b162764607513499ee7df7e4365b377152704abd",
   "publishConfig": {
