@@ -23,12 +23,17 @@ function exec() {
     const packageName = SETTINGS[cmdName]
     const packageVersion = 'lastest'
 
+    if (!targetPath) {
+        // 生成缓存路径
+        targetPath = ''
+    }
+
     const pkg = new Package({
         targetPath,
         packageName,
         packageVersion
     })
-    console.log(pkg)
+    console.log(pkg.getRootFilePath())
     // 1.targetPath -> modulePath
     // 2.modulePath -> Package(npm模块)
     // 3.Package.getRootFile(获取入口文件)
