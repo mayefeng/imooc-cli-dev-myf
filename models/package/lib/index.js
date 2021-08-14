@@ -1,9 +1,11 @@
 'use strict';
 const path = require('path')
 const pkgDir = require('pkg-dir').sync
+const npminstall = require('npminstall')
 
 const { isObject } = require('@imooc-cli-dev-myf/utils')
 const formatPath = require('@imooc-cli-dev-myf/format-path')
+const { getDefaultRegisry } = require('@imooc-cli-dev-myf/get-npm-info')
 
 class Package{
     constructor(options) {
@@ -16,7 +18,7 @@ class Package{
         // package路径，不传的时候表示这不是一个本地的package
         this.targetPath = options.targetPath
         // package的存储路径，因为我们从远程下载package之后，需要把他存到本地
-        // this.storePath = options.storePath // 放外部判断，如果没有targetPath就生成缓存路径赋值给targetPath
+        this.storePath = options.storePath // 放外部判断，如果没有targetPath就生成缓存路径赋值给targetPath
         // package的name
         this.packageName = options.packageName
         // package的version
@@ -30,7 +32,19 @@ class Package{
 
     // 安装Package
     install() {
-
+        return npminstall({
+            // 模块路径
+            root: this.targetPath,
+            // 实际存储的位置
+            storeDir: this.storeDir,
+            registry: getDefaultRegisry(),
+            pkgs: [
+                {
+                    name: this.packageName, 
+                    version: this.packageVersion
+                }
+            ],
+        })
     }
 
     // 更新Package

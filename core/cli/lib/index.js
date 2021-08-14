@@ -27,6 +27,10 @@ async function core() {
     regiserCommand()
     } catch (e) {
         log.error(e.message)
+        // if (process.env.LOG_LEVEL === 'verbose') {
+        if (program.opts().debug) {
+            console.log(e)
+        }
     }
 }
 
