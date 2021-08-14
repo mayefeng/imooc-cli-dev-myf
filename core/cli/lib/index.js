@@ -10,6 +10,7 @@ const pathExists = require('path-exists').sync
 const commander = require('commander')
 const log = require('@imooc-cli-dev-myf/log')
 const init = require('@imooc-cli-dev-myf/init')
+const exec = require('@imooc-cli-dev-myf/exec')
 
 const pkg = require('../package.json');
 const constant = require('./const');
@@ -22,14 +23,7 @@ const program = new commander.Command()
 
 async function core() {
     try {
-    checkPkgVersion()
-    checkNodeVersion()
-    checkRoot()
-    checkUserHome()
-    // checkInputArgs()
-    checkEnv()
-    await checkGlobalUpdate()
-    // log.verbose('debug', 'test debug log')
+    await prepare()
     regiserCommand()
     } catch (e) {
         log.error(e.message)
@@ -42,21 +36,28 @@ function regiserCommand() {
         .usage('<command> [options]')
         .version(pkg.version)
         .option('-d, --debug', '是否开启调试模式', false)
+        .option('-tp, --targetPath <targetPath>', '是否指定本地调试文件路径', '')
 
     program
         .command('init [projectName]')
         .option('-f, --force', '是否强制初始化项目')
-        .action(init)
+        .action(exec)
 
     // 开启debug模式的监听
     program.on('option:debug', () => {
-        console.log(program.opts().debug)
+        // console.log(program.opts().debug)
         if (program.opts().debug) {
             process.env.LOG_LEVEL = 'verbose'
         } else {
             process.env.LOG_LEVEL = 'info'
         }
         log.level = process.env.LOG_LEVEL
+    })
+
+    // 指定targetPath
+    // 监听可以在业务逻辑之前执行
+    program.on('option:targetPath', () => {
+        process.env.CLI_TARGET_PATH = program.opts().targetPath
     })
     
     // 对未知命令的监听
@@ -72,8 +73,18 @@ function regiserCommand() {
 
     if (program.args?.length < 1) {
         program.outputHelp()
-        console.log()
     }
+}
+
+async function prepare() {
+    checkPkgVersion()
+    checkNodeVersion()
+    checkRoot()
+    checkUserHome()
+    // checkInputArgs()
+    checkEnv()
+    await checkGlobalUpdate()
+    // log.verbose('debug', 'test debug log')
 }
 
 async function checkGlobalUpdate() {
@@ -107,7 +118,7 @@ function checkEnv() {
 
     // 第二种方案
     createDefaultConfig()
-    log.verbose('环境变量', process.env.CLI_HOME_PATH)
+    // log.verbose('环境变量', process.env.CLI_HOME_PATH)
 }
 
 function createDefaultConfig() {
@@ -125,20 +136,20 @@ function createDefaultConfig() {
     process.env.CLI_HOME_PATH = cliConfig.cliHome
 }
 
-function checkInputArgs() {
-    const minimist = require('minimist')
-    args = minimist(process.argv.slice(2))
-    checkArgs()
-}
+// function checkInputArgs() {
+//     const minimist = require('minimist')
+//     args = minimist(process.argv.slice(2))
+//     checkArgs()
+// }
 
-function checkArgs() {
-    if(args.debug) {
-        process.env.LOG_LEVEL = 'verbose'
-    } else {
-        process.env.LOG_LEVEL = 'info'
-    }
-    log.level = process.env.LOG_LEVEL
-}
+// function checkArgs() {
+//     if(args.debug) {
+//         process.env.LOG_LEVEL = 'verbose'
+//     } else {
+//         process.env.LOG_LEVEL = 'info'
+//     }
+//     log.level = process.env.LOG_LEVEL
+// }
 
 function checkUserHome() {
     if (!userHome || !pathExists(userHome)) {

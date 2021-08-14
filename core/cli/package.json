@@ -24,6 +24,7 @@
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
     "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
     "@imooc-cli-dev-myf/init": "file:../../commands/init",
+    "@imooc-cli-dev-myf/exec": "file:../exec",
     "colors": "^1.4.0",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
