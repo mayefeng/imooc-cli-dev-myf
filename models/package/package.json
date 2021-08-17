@@ -27,6 +27,7 @@
     "@imooc-cli-dev-myf/format-path": "file:../../utils/format-path",
     "@imooc-cli-dev-myf/get-npm-info": "file:../../utils/get-npm-info",
     "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
+    "fs-extra": "^10.0.0",
     "npminstall": "^4.11.0",
     "path-exists": "^4.0.0",
     "pkg-dir": "^5.0.0"

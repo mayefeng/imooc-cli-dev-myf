@@ -1,5 +1,6 @@
 'use strict';
 const path = require('path')
+const fse = require('fs-extra')
 const pkgDir = require('pkg-dir').sync
 const pathExists = require('path-exists').sync
 const npminstall = require('npminstall')
@@ -28,14 +29,21 @@ class Package{
     }
 
     async prepare() {
+        if (this.storeDir && !pathExists(this.storeDir)) {
+            // 把当前目录下没有创建的姆目录全部创建好
+            fse.mkdirpSync(this.storeDir)
+        }
         if (this.packageVersion === 'latest') {
             this.packageVersion = await getNpmLastestVersion(this.packageName)
         }
-        console.log(this.packageVersion)
     }
 
     get cacheFilePath() {
         return path.resolve(this.storeDir, `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`)
+    }
+
+    getSpeficCacheFilePath(packageVersion) {
+        return path.resolve(this.storeDir, `_${this.cacheFilePathPrefix}@${packageVersion}@${this.packageName}`)
     }
 
     // 判断当前package是否存在
@@ -70,8 +78,30 @@ class Package{
     }
 
     // 更新Package
-    update() {
-
+    async update() {
+        console.log('update')
+        await this.prepare()
+        // 1. 获取最新的npm模块版本号
+        const latestPackageVersion = await getNpmLastestVersion(this.packageName)
+        // 2. 查询最新版本号对于的路径是否存在
+        const latestFilePath = this.getSpeficCacheFilePath(latestPackageVersion)
+        // 3. 如果不存在，则直接安装最新版本
+        if (!pathExists(latestFilePath)) {
+            await npminstall({
+                // 模块路径
+                root: this.targetPath,
+                // 实际存储的位置
+                storeDir: this.storeDir,
+                registry: getDefaultRegisry(),
+                pkgs: [
+                    {
+                        name: this.packageName, 
+                        version: latestPackageVersion
+                    }
+                ],
+            })
+            this.packageVersion = latestPackageVersion
+        }
     }
 
     // 获取入口文件的路径

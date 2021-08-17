@@ -27,7 +27,8 @@ async function exec() {
     // console.log(cmdobj.name())
     const cmdName = cmdobj.name() // 可以做一个映射表把我们的init映射到具体的package
     const packageName = SETTINGS[cmdName]
-    const packageVersion = 'latest'
+    // const packageVersion = 'latest'
+    const packageVersion = '1.1.0'
 
     if (!targetPath) {
         // 生成缓存路径
@@ -43,7 +44,7 @@ async function exec() {
         })
         if(await pkg.exists()) {
             // 更新package
-            console.log('更新package')
+            await pkg.update()
         } else {
             // 安装package
             console.log('install')
