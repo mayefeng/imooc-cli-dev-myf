@@ -48,11 +48,8 @@ class Package{
 
     // 判断当前package是否存在
     async exists() {
-        console.log('this.storeDir',this.storeDir)
         if (this.storeDir) {
             await this.prepare()
-            console.log(this.cacheFilePath)
-            console.log(pathExists(this.cacheFilePath))
             return pathExists(this.cacheFilePath)
         } else {
             return pathExists(this.targetPath)
@@ -79,7 +76,6 @@ class Package{
 
     // 更新Package
     async update() {
-        console.log('update')
         await this.prepare()
         // 1. 获取最新的npm模块版本号
         const latestPackageVersion = await getNpmLastestVersion(this.packageName)
@@ -106,21 +102,29 @@ class Package{
 
     // 获取入口文件的路径
     getRootFilePath() {
-        // 1、获取package.json所在的目录
-            // 可能他传过来的targetPath没有package.json不是我们的主目录
-            // pkg-dir来实现
-        const dir = pkgDir(this.targetPath)
-        if (dir) {
-            // 2、读取package.json - require()  js/json/node
-            const pkgFile = require(path.resolve(dir, 'package.json'))
-            // 3、寻找main/lib - path
-            if (pkgFile && pkgFile.main) {
-                // 4、路径的兼容（macOS/windows）
-                return formatPath(path.resolve(dir, pkgFile.main))
+        function _getRootFile(targetPath) {
+            // 1、获取package.json所在的目录
+                // 可能他传过来的targetPath没有package.json不是我们的主目录
+                // pkg-dir来实现
+            const dir = pkgDir(targetPath)
+            if (dir) {
+                // 2、读取package.json - require()  js/json/node
+                const pkgFile = require(path.resolve(dir, 'package.json'))
+                // 3、寻找main/lib - path
+                if (pkgFile && pkgFile.main) {
+                    // 4、路径的兼容（macOS/windows）
+                    return formatPath(path.resolve(dir, pkgFile.main))
+                }
+                return null
             }
             return null
         }
-        return null
+
+        if (this.storeDir) {
+            return _getRootFile(this.cacheFilePath)
+        } else {
+            return _getRootFile(this.targetPath)
+        }
 
     }
 }

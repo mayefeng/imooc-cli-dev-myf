@@ -18,8 +18,8 @@ async function exec() {
     const homePath = process.env.CLI_HOME_PATH
     let storeDir = ''
     let pkg
-    // log.verbose('targetPath', targetPath)
-    // log.verbose('homePath', homePath)
+    log.verbose('targetPath', targetPath)
+    log.verbose('homePath', homePath)
 
     // console.log(arguments)
     const cmdobj = arguments[arguments.length - 1]
@@ -27,8 +27,8 @@ async function exec() {
     // console.log(cmdobj.name())
     const cmdName = cmdobj.name() // 可以做一个映射表把我们的init映射到具体的package
     const packageName = SETTINGS[cmdName]
-    // const packageVersion = 'latest'
-    const packageVersion = '1.1.0'
+    const packageVersion = 'latest'
+    // const packageVersion = '1.1.0'
 
     if (!targetPath) {
         // 生成缓存路径
@@ -47,7 +47,6 @@ async function exec() {
             await pkg.update()
         } else {
             // 安装package
-            console.log('install')
             await pkg.install()
         }
     } else {
@@ -65,6 +64,7 @@ async function exec() {
         // 封装 -> 复用
     }
     const rootFile = pkg.getRootFilePath()
+    console.log(rootFile)
     if (rootFile) {
         // apply这里作用是把数组转为参数列表形式
         require(rootFile).apply(null, arguments)
