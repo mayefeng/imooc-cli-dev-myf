@@ -18,8 +18,8 @@ async function exec() {
     const homePath = process.env.CLI_HOME_PATH
     let storeDir = ''
     let pkg
-    log.verbose('targetPath', targetPath)
-    log.verbose('homePath', homePath)
+    // log.verbose('targetPath', targetPath)
+    // log.verbose('homePath', homePath)
 
     // console.log(arguments)
     const cmdobj = arguments[arguments.length - 1]
@@ -41,8 +41,9 @@ async function exec() {
             packageName,
             packageVersion
         })
-        if(pkg.exists()) {
+        if(await pkg.exists()) {
             // 更新package
+            console.log('更新package')
         } else {
             // 安装package
             console.log('install')
@@ -62,7 +63,6 @@ async function exec() {
 
         // 封装 -> 复用
     }
-    console.log('>>>>>>>>>>>>')
     const rootFile = pkg.getRootFilePath()
     if (rootFile) {
         // apply这里作用是把数组转为参数列表形式

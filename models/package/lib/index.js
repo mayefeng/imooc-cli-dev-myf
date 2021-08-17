@@ -1,11 +1,11 @@
 'use strict';
 const path = require('path')
 const pkgDir = require('pkg-dir').sync
+const pathExists = require('path-exists').sync
 const npminstall = require('npminstall')
-
 const { isObject } = require('@imooc-cli-dev-myf/utils')
 const formatPath = require('@imooc-cli-dev-myf/format-path')
-const { getDefaultRegisry } = require('@imooc-cli-dev-myf/get-npm-info')
+const { getDefaultRegisry, getNpmLastestVersion } = require('@imooc-cli-dev-myf/get-npm-info')
 
 class Package{
     constructor(options) {
@@ -18,20 +18,42 @@ class Package{
         // package路径，不传的时候表示这不是一个本地的package
         this.targetPath = options.targetPath
         // package的存储路径，因为我们从远程下载package之后，需要把他存到本地
-        this.storePath = options.storePath // 放外部判断，如果没有targetPath就生成缓存路径赋值给targetPath
+        this.storeDir = options.storeDir // 放外部判断，如果没有targetPath就生成缓存路径赋值给targetPath
         // package的name
         this.packageName = options.packageName
         // package的version
         this.packageVersion = options.packageVersion
+        // package的缓存目录前缀
+        this.cacheFilePathPrefix = this.packageName.replace('/', '_')
+    }
+
+    async prepare() {
+        if (this.packageVersion === 'latest') {
+            this.packageVersion = await getNpmLastestVersion(this.packageName)
+        }
+        console.log(this.packageVersion)
+    }
+
+    get cacheFilePath() {
+        return path.resolve(this.storeDir, `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`)
     }
 
     // 判断当前package是否存在
-    exists() {
-
+    async exists() {
+        console.log('this.storeDir',this.storeDir)
+        if (this.storeDir) {
+            await this.prepare()
+            console.log(this.cacheFilePath)
+            console.log(pathExists(this.cacheFilePath))
+            return pathExists(this.cacheFilePath)
+        } else {
+            return pathExists(this.targetPath)
+        }
     }
 
     // 安装Package
-    install() {
+    async install() {
+        await this.prepare()
         return npminstall({
             // 模块路径
             root: this.targetPath,
