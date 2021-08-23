@@ -3,8 +3,10 @@
 module.exports = exec;
 
 const path = require('path')
+const cp = require('child_process')
 const Package = require('@imooc-cli-dev-myf/package')
-const log = require('@imooc-cli-dev-myf/log')
+const log = require('@imooc-cli-dev-myf/log');
+const { chdir } = require('process');
 
 const SETTINGS = {
     // init: '@imooc-cli-dev-myf/init'
@@ -66,8 +68,60 @@ async function exec() {
     const rootFile = pkg.getRootFilePath()
     console.log(rootFile)
     if (rootFile) {
-        // apply这里作用是把数组转为参数列表形式
-        require(rootFile).apply(null, arguments)
+        try { 
+            // apply这里作用是把数组转为参数列表形式
+            // require这种方式是在当前进程中调用
+            // require(rootFile).call(null, Array.from(arguments))
+            // 将require的调用方式改为node子进程方式调用，可获得更多的cpu资源以获得更高的执行性能
+            // fork方法不提供回调而是通过子进程通信进行解决
+            // 有用户交互希望不断到数据所以用spawnSync
+            // -e是执行代码
+            // 相当于node -e "console.log(1)"
+            const args = Array.from(arguments)
+            const cmd = args[args.length - 1]
+            const o = Object.create(null) // 创建一个没有原型链的对象，即纯粹对象
+            Object.keys(cmd).forEach(key => {
+                if (
+                    // cmd.hasOwnProperty(key) && 
+                    !key.startsWith('_') && 
+                    key !== 'parent'
+                    ) {
+                    o[key] = cmd[key]
+                }
+            })
+            args[args.length - 1] = o
+            const code = `require('${rootFile}').call(null, ${JSON.stringify(args)})`
+            const child = spawn('node', ['-e', code], {
+                cwd: process.cwd(),
+                stdio: 'inherit'
+            })
+            child.on('error', e => {
+                log.error(e.message)
+                process.exit(1) // 有错误中断执行
+            })
+            child.on('exit', e => {
+                log.verbose('命令执行成功' + e)
+                process.exit(e)
+            })
+            // child.stdout('data', (chunk) => {
+                
+            // })
+            // child.stderr('data', (chunk) => {
+
+            // })
+        } catch (e) {
+            log.error(e.message)
+        }
     }
+
+}
+
+function spawn(command, args, options) {
+    const win32 = process.platform === 'win32'
+
+    const cmd = win32 ? 'cmd' : command
+    const cmdArgs = win32 ? ['/c'].concat(command, args) : args;
+    // cp.spawn('cmd', ['/c', 'node', '-e', code])
+    return cp.spawn(cmd, cmdArgs, options || {})
 
 }

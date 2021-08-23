@@ -30,7 +30,7 @@ class Package{
 
     async prepare() {
         if (this.storeDir && !pathExists(this.storeDir)) {
-            // 把当前目录下没有创建的姆目录全部创建好
+            // 把当前目录下没有创建的目录全部创建好
             fse.mkdirpSync(this.storeDir)
         }
         if (this.packageVersion === 'latest') {

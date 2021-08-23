@@ -9,7 +9,7 @@ const userHome = require('user-home')
 const pathExists = require('path-exists').sync
 const commander = require('commander')
 const log = require('@imooc-cli-dev-myf/log')
-const init = require('@imooc-cli-dev-myf/init')
+// const init = require('@imooc-cli-dev-myf/init')
 const exec = require('@imooc-cli-dev-myf/exec')
 
 const pkg = require('../package.json');
@@ -82,7 +82,7 @@ function regiserCommand() {
 
 async function prepare() {
     checkPkgVersion()
-    checkNodeVersion()
+    // checkNodeVersion() 被下沉到Command
     checkRoot()
     checkUserHome()
     // checkInputArgs()
@@ -166,16 +166,16 @@ function checkRoot() {
     rootCheck()
 }
 
-function checkNodeVersion() {
-    // 第一步，获取当前Node版本号
-    const currentVersion = process.version
-    // 第二步，比对最低版本号
-    const lowestNodeVersion = constant.LOWEST_NODE_VERSION
+// function checkNodeVersion() {
+//     // 第一步，获取当前Node版本号
+//     const currentVersion = process.version
+//     // 第二步，比对最低版本号
+//     const lowestNodeVersion = constant.LOWEST_NODE_VERSION
 
-    if (!semver.gte(currentVersion, lowestNodeVersion)) {
-        throw new Error(colors.red(`imooc-cli 需要安装 v${lowestNodeVersion}以上版本的 Node.js` ))
-    }
-}
+//     if (!semver.gte(currentVersion, lowestNodeVersion)) {
+//         throw new Error(colors.red(`imooc-cli 需要安装 v${lowestNodeVersion}以上版本的 Node.js` ))
+//     }
+// }
 
 function checkPkgVersion() {
     // console.log(pkg.version)

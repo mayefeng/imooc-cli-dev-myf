@@ -1,7 +1,7 @@
 {
-  "name": "@imooc-cli-dev-myf/init",
+  "name": "@imooc-cli-dev-myf/command",
   "version": "1.0.0",
-  "description": "imooc-cli-dev-myf init",
+  "description": "imooc-cli-dev-myf command",
   "author": "mayefeng <mayefeng@163.com>",
   "homepage": "https://github.com/mayefeng/imooc-cli-dev-myf#readme",
   "license": "ISC",
@@ -23,11 +23,12 @@
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
-  "dependencies": {
-    "@imooc-cli-dev-myf/command": "file:../../models/command",
-    "@imooc-cli-dev-myf/log": "file:../../utils/log"
-  },
   "bugs": {
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"
+  },
+  "dependencies": {
+    "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "colors": "^1.4.0",
+    "semver": "^7.3.5"
   }
 }
