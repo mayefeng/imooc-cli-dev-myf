@@ -10,8 +10,12 @@ function init(argv) {
 const fs = require('fs')
 const inquirer = require('inquirer')
 const fse = require('fs-extra')
+const semver = require('semver')
 const Command = require('@imooc-cli-dev-myf/command')
 const log = require('@imooc-cli-dev-myf/log')
+
+const TYPE_PROJECT = 'project'
+const TYPE_COMPONENT = 'component'
 
 class InitCommand extends Command {
     init() {
@@ -51,6 +55,7 @@ class InitCommand extends Command {
                     return
                 }
             }
+            // 2、是否启动强制更新
             if (ifContinue || this.force) {
                 // 给用户做二次确认
                 const { confirmDelete } = await inquirer.prompt({
@@ -66,9 +71,86 @@ class InitCommand extends Command {
                 }
             }
         }
-        // 2、是否启动强制更新 
+        return this.getProjectInfo()
+    }
+
+    async getProjectInfo() {
+        let projectInfo = {}
         // 3、选择创建项目或组件
+        const { type } = await inquirer.prompt({
+            type: 'list',
+            name: 'type',
+            message: '请选择初始化类型',
+            default: TYPE_PROJECT,
+            choices: [
+                {
+                    name: '项目',
+                    value: TYPE_PROJECT,
+                },
+                {
+                    name: '组件',
+                    value: TYPE_COMPONENT
+                }
+            ]
+        })
+        log.verbose('type', type)
         // 4、获取项目基本信息
+        if (type === TYPE_PROJECT) {
+            const o = await inquirer.prompt([
+                {
+                    type: 'input',
+                    message: '请输入项目的名称',
+                    name: 'projectName',
+                    default: '',
+                    validate: function(v) {
+                        const done = this.async();
+
+                        setTimeout(function() {
+                        // 1.输入的首字符和尾字符必须为英文字符
+                        // 2.尾字符必须为英文或数字，不能为字符
+                        // 3.字符仅允许”-_“
+                          if (!/^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)) {
+                            done('请输入合法的项目名称');
+                            return;
+                          }
+                          done(null, true);
+                        }, 0);
+
+                        // return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
+                    },
+                    filter: function(v) {
+                        return v
+                    }
+                },
+                {
+                    type: 'input',
+                    name: 'projectVersion',
+                    message: '请输入项目版本号',
+                    default: '1.0.0',
+                    validate: function(v) {
+                        const done = this.async();
+
+                        setTimeout(function() {
+                          if (!semver.valid(v)) {
+                            done('请输入合法的版本号');
+                            return;
+                          }
+                          done(null, true);
+                        }, 0);
+                        // return !!semver.valid(v)
+                    },
+                    filter: function(v) {
+                        if (!!semver.valid(v)) {
+                            return semver.valid(v)
+                        }
+                        return v
+                    }
+                }
+            ])
+            console.log(o)
+        } else if (type === TYPE_COMPONENT) {
+
+        }
     }
 
     isDirEmpty(localPath) {
