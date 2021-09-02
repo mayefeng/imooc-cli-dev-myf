@@ -28,7 +28,7 @@ async function core() {
     } catch (e) {
         log.error(e.message)
         // if (process.env.LOG_LEVEL === 'verbose') {
-        if (program.opts().debug) {
+        if (program.debug) {
             console.log(e)
         }
     }
@@ -49,8 +49,8 @@ function regiserCommand() {
 
     // 开启debug模式的监听
     program.on('option:debug', () => {
-        // console.log(program.opts().debug)
-        if (program.opts().debug) {
+        // console.log(program.debug)
+        if (program.debug) {
             process.env.LOG_LEVEL = 'verbose'
         } else {
             process.env.LOG_LEVEL = 'info'
@@ -61,7 +61,7 @@ function regiserCommand() {
     // 指定targetPath
     // 监听可以在业务逻辑之前执行
     program.on('option:targetPath', () => {
-        process.env.CLI_TARGET_PATH = program.opts().targetPath
+        process.env.CLI_TARGET_PATH = program.targetPath
     })
     
     // 对未知命令的监听

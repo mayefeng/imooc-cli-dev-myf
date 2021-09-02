@@ -25,7 +25,7 @@ async function exec() {
 
     // console.log(arguments)
     const cmdobj = arguments[arguments.length - 1]
-    // console.log(cmdobj.opts().force)
+    // console.log(cmdobj.force)
     // console.log(cmdobj.name())
     const cmdName = cmdobj.name() // 可以做一个映射表把我们的init映射到具体的package
     const packageName = SETTINGS[cmdName]

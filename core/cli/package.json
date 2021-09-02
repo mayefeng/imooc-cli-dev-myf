@@ -20,13 +20,13 @@
     "test": "echo \"Run testting from core\""
   },
   "dependencies": {
+    "@imooc-cli-dev-myf/exec": "file:../exec",
     "@imooc-cli-dev-myf/get-npm-info": "file:../../utils/get-npm-info",
+    "@imooc-cli-dev-myf/init": "file:../../commands/init",
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
     "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
-    "@imooc-cli-dev-myf/init": "file:../../commands/init",
-    "@imooc-cli-dev-myf/exec": "file:../exec",
     "colors": "^1.4.0",
-    "commander": "^8.1.0",
+    "commander": "^6.2.1",
     "dotenv": "^10.0.0",
     "import-local": "^3.0.2",
     "minimist": "^1.2.5",
