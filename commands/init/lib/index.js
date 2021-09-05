@@ -14,6 +14,8 @@ const semver = require('semver')
 const Command = require('@imooc-cli-dev-myf/command')
 const log = require('@imooc-cli-dev-myf/log')
 
+const getProjectTemplate = require('./getProjectTemplate')
+
 const TYPE_PROJECT = 'project'
 const TYPE_COMPONENT = 'component'
 
@@ -28,9 +30,12 @@ class InitCommand extends Command {
     async exec() {
         try {
             // 1、准备阶段
-            const ret = await this.prepare()
-            if (ret) {
+            const projectInfo = await this.prepare()
+            if (projectInfo) {
                 // 2、下载模板
+                log.verbose('projectInfo', projectInfo)
+                this.projectInfo = projectInfo
+                this.downloadTemplate()
                 // 3、安装模板
             }
         } catch (e) {
@@ -38,7 +43,23 @@ class InitCommand extends Command {
         }
     }
 
+    downloadTemplate() {
+        // console.log(this.projectInfo, this.template)
+        // 1.通过项目模板API获取项目模板信息
+        // 1.1 通过egg.js搭建一套后端系统提供API
+        // 1.2 通过npm存储项目模板(vue-cli/vue-element-admin)
+        // 1.3 将项目模板信息存储到mongodb数据库中
+        // 1.4 通过egg.js获取mongodb中的数据并且通过API返回
+    }
+
     async prepare() {
+        // 0、判断项目模板是否存在
+        const template = await getProjectTemplate()
+        // console.log('template', template)
+        if (!template || template.length === 0) {
+            throw new Error('项目模板不存在')
+        }
+        this.template = template
         const localPath = process.cwd() // 当前进程的目录，即跑命令的目录
         // 1、判断当前目录是否为空
         if(!this.isDirEmpty(localPath)) {
@@ -96,7 +117,7 @@ class InitCommand extends Command {
         log.verbose('type', type)
         // 4、获取项目基本信息
         if (type === TYPE_PROJECT) {
-            const o = await inquirer.prompt([
+            const project = await inquirer.prompt([
                 {
                     type: 'input',
                     message: '请输入项目的名称',
@@ -145,12 +166,22 @@ class InitCommand extends Command {
                         }
                         return v
                     }
+                },
+                {
+                    type: 'list',
+                    name: 'projectTemplate',
+                    message: '请选择项目模板',
+                    choices: this.createTemplateChoices()
                 }
             ])
-            console.log(o)
+            projectInfo = {
+                type,
+                ...project
+            }
         } else if (type === TYPE_COMPONENT) {
 
         }
+        return projectInfo
     }
 
     isDirEmpty(localPath) {
@@ -166,6 +197,13 @@ class InitCommand extends Command {
         ))
         // console.log(fileList)
         return !fileList || fileList.length <= 0
+    }
+
+    createTemplateChoices() {
+        return this.template.map(item => ({
+            value: item.npmName,
+            name: item.name
+        }))
     }
 }
 

@@ -109,7 +109,7 @@ async function checkGlobalUpdate() {
 
 function checkEnv() {
     const dotenv = require('dotenv')
-    const dotenvPath = path.resolve(userHome, '.eno')
+    const dotenvPath = path.resolve(userHome, '.env')
     if (pathExists(dotenvPath)) {
         config = dotenv.config({
             path: dotenvPath

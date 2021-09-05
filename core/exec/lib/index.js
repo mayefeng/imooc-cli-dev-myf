@@ -66,7 +66,7 @@ async function exec() {
         // 封装 -> 复用
     }
     const rootFile = pkg.getRootFilePath()
-    console.log(rootFile)
+    console.log('rootFile', rootFile)
     if (rootFile) {
         try { 
             // apply这里作用是把数组转为参数列表形式
