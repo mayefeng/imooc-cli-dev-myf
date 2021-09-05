@@ -8,10 +8,13 @@ function init(argv) {
 }
 
 const fs = require('fs')
+const path = require('path')
 const inquirer = require('inquirer')
 const fse = require('fs-extra')
 const semver = require('semver')
+const userHome = require('user-home')
 const Command = require('@imooc-cli-dev-myf/command')
+const Package = require('@imooc-cli-dev-myf/package')
 const log = require('@imooc-cli-dev-myf/log')
 
 const getProjectTemplate = require('./getProjectTemplate')
@@ -43,8 +46,24 @@ class InitCommand extends Command {
         }
     }
 
-    downloadTemplate() {
-        // console.log(this.projectInfo, this.template)
+    async downloadTemplate() {
+        const { projectTemplate } = this.projectInfo
+        const templateInfo = this.template.find(item => item.npmName === projectTemplate)
+        const targetPath = path.resolve(userHome, '.imooc-cli-dev-myf', 'template')
+        const storeDir = path.resolve(userHome, '.imooc-cli-dev-myf', 'template', 'node_modules')
+        const { npmName, version } = templateInfo
+        const templateNpm = new Package({
+            targetPath,
+            storeDir,
+            packageName: npmName,
+            packageVersion: version
+        })
+        if (!await templateNpm.exists()) {
+            await templateNpm.install()
+        } else {
+            await templateNpm.update()
+        }
+        console.log(targetPath, storeDir, npmName, version, templateNpm)
         // 1.通过项目模板API获取项目模板信息
         // 1.1 通过egg.js搭建一套后端系统提供API
         // 1.2 通过npm存储项目模板(vue-cli/vue-element-admin)

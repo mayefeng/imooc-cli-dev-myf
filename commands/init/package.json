@@ -26,10 +26,12 @@
   "dependencies": {
     "@imooc-cli-dev-myf/command": "file:../../models/command",
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "@imooc-cli-dev-myf/package": "file:../../models/package",
     "@imooc-cli-dev-myf/request": "file:../../utils/request",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.1.2",
-    "semver": "^7.3.5"
+    "semver": "^7.3.5",
+    "user-home": "^3.0.0"
   },
   "bugs": {
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"
