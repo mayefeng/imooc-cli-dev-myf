@@ -114,7 +114,6 @@ function checkEnv() {
         config = dotenv.config({
             path: dotenvPath
         })
-        console.log('config', config)
     }
     // 第一种方案
     // config = createDefaultConfig()

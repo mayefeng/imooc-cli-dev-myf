@@ -16,6 +16,7 @@ const userHome = require('user-home')
 const Command = require('@imooc-cli-dev-myf/command')
 const Package = require('@imooc-cli-dev-myf/package')
 const log = require('@imooc-cli-dev-myf/log')
+const { spinnerStart } = require('@imooc-cli-dev-myf/utils')
 
 const getProjectTemplate = require('./getProjectTemplate')
 
@@ -58,10 +59,27 @@ class InitCommand extends Command {
             packageName: npmName,
             packageVersion: version
         })
+        console.log('exist', !await templateNpm.exists())
         if (!await templateNpm.exists()) {
-            await templateNpm.install()
+            const spinner = spinnerStart('正在下载模板...')
+            try {
+                await templateNpm.install()
+                log.success('下载模板成功')
+            } catch (e) {
+                throw e
+            } finally {
+                spinner.stop(true)
+            }
         } else {
-            await templateNpm.update()
+            const spinner = spinnerStart('正在更新模板...')
+            try {
+                await templateNpm.update()
+                log.success('更新模板成功')
+            } catch (e) {
+                throw e
+            } finally {
+                spinner.stop(true)
+            }
         }
         console.log(targetPath, storeDir, npmName, version, templateNpm)
         // 1.通过项目模板API获取项目模板信息

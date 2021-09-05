@@ -28,6 +28,7 @@
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
     "@imooc-cli-dev-myf/package": "file:../../models/package",
     "@imooc-cli-dev-myf/request": "file:../../utils/request",
+    "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.1.2",
     "semver": "^7.3.5",
