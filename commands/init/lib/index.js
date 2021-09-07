@@ -23,6 +23,9 @@ const getProjectTemplate = require('./getProjectTemplate')
 const TYPE_PROJECT = 'project'
 const TYPE_COMPONENT = 'component'
 
+const TEMPLATE_TYPE_NORMAL = 'normal'
+const TEMPLATE_TYPE_CUSTOM = 'custom'
+
 class InitCommand extends Command {
     init() {
         this.projectName = this._argv[0] || ''
@@ -39,49 +42,81 @@ class InitCommand extends Command {
                 // 2、下载模板
                 log.verbose('projectInfo', projectInfo)
                 this.projectInfo = projectInfo
-                this.downloadTemplate()
+                await this.downloadTemplate()
                 // 3、安装模板
+                await this.installTemplate()
             }
         } catch (e) {
             log.error(e.message)
         }
     }
 
+    async installTemplate() {
+        if (this.templateInfo) {
+            if(!this.templateInfo.type) {
+                this.templateInfo.type = TEMPLATE_TYPE_NORMAL
+            }
+            if (this.templateInfo.type === TEMPLATE_TYPE_NORMAL) {
+                // 标准安装
+                this.installNormalTemplate()
+            } else if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
+                // 自定义安装
+                this.installCustomTemplate()
+            } else {
+                throw new Error('项目模板类型无法识别！')
+            }
+
+        } else {
+            throw new Error('项目模板信息不存在')
+        }
+    }
+
+    async installNormalTemplate() {
+        console.log('normal')
+    }
+    async installCustomTemplate() {
+        console.log('custom')
+    }
+
     async downloadTemplate() {
         const { projectTemplate } = this.projectInfo
-        const templateInfo = this.template.find(item => item.npmName === projectTemplate)
+        this.templateInfo = this.template.find(item => item.npmName === projectTemplate)
         const targetPath = path.resolve(userHome, '.imooc-cli-dev-myf', 'template')
         const storeDir = path.resolve(userHome, '.imooc-cli-dev-myf', 'template', 'node_modules')
-        const { npmName, version } = templateInfo
+        const { npmName, version } = this.templateInfo
         const templateNpm = new Package({
             targetPath,
             storeDir,
             packageName: npmName,
             packageVersion: version
         })
-        console.log('exist', !await templateNpm.exists())
+        // console.log('exist', !await templateNpm.exists())
         if (!await templateNpm.exists()) {
             const spinner = spinnerStart('正在下载模板...')
             try {
                 await templateNpm.install()
-                log.success('下载模板成功')
             } catch (e) {
                 throw e
             } finally {
                 spinner.stop(true)
+                if (await templateNpm.exists()) {
+                    log.success('下载模板成功')
+                }
             }
         } else {
             const spinner = spinnerStart('正在更新模板...')
             try {
                 await templateNpm.update()
-                log.success('更新模板成功')
             } catch (e) {
                 throw e
             } finally {
                 spinner.stop(true)
+                if (await templateNpm.exists()) {
+                    log.success('更新模板成功')
+                }
             }
         }
-        console.log(targetPath, storeDir, npmName, version, templateNpm)
+        // console.log(targetPath, storeDir, npmName, version, templateNpm)
         // 1.通过项目模板API获取项目模板信息
         // 1.1 通过egg.js搭建一套后端系统提供API
         // 1.2 通过npm存储项目模板(vue-cli/vue-element-admin)
