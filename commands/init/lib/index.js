@@ -26,6 +26,8 @@ const TYPE_COMPONENT = 'component'
 const TEMPLATE_TYPE_NORMAL = 'normal'
 const TEMPLATE_TYPE_CUSTOM = 'custom'
 
+const WHITE_COMMAND = ['npm', 'cnpm']
+
 class InitCommand extends Command {
     init() {
         this.projectName = this._argv[0] || ''
@@ -58,7 +60,7 @@ class InitCommand extends Command {
             }
             if (this.templateInfo.type === TEMPLATE_TYPE_NORMAL) {
                 // 标准安装
-                this.installNormalTemplate()
+                await this.installNormalTemplate()
             } else if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
                 // 自定义安装
                 this.installCustomTemplate()
@@ -69,6 +71,33 @@ class InitCommand extends Command {
         } else {
             throw new Error('项目模板信息不存在')
         }
+    }
+
+    checkCommand(cmd) {
+        if (WHITE_COMMAND.includes(cmd)) {
+            return cmd
+        }
+        return null
+    }
+
+    async execCommand(command, errMsg) {
+        let ret
+        if (command) {
+            const cmdArray = command.split(' ')
+            const cmd = this.checkCommand(cmdArray[0])
+            if (!cmd) {
+                throw new Error('命令不存在！命令：' + command)
+            }
+            const args = cmdArray.slice(1)
+            ret = await execAsync(cmd, args, {
+                stdio: 'inherit', // 将子进程中的在主进程中打印
+                cwd: process.cwd()
+            })
+        }
+        if (ret !== 0) {
+            throw new Error(errMsg)
+        }
+        return ret
     }
 
     async installNormalTemplate() {
@@ -87,30 +116,11 @@ class InitCommand extends Command {
             spinner.stop(true)
             log.success('模板安装成功')
         }
+        const { installCommand, startCommand } = this.templateInfo
         // 依赖安装
-        const { installCommand, startCommand } = this.templateInfo 
-        if (installCommand) {
-            const installCmd = installCommand.split(' ')
-            const cmd = installCmd[0]
-            const args = installCmd.slice(1)
-            const installRet = await execAsync(cmd, args, {
-                stdio: 'inherit', // 将子进程中的在主进程中打印
-                cwd: process.cwd()
-            })
-            if (installRet !== 0) {
-                throw new Error('依赖安装过程中失败！')
-            }
-        }
+        await this.execCommand(installCommand, '依赖安装过程中失败！')
         // 启动命令执行
-        if (startCommand) {
-            const startCmd = startCommand.split(' ')
-            const cmd = startCmd[0]
-            const args = startCmd.slice(1)
-            const startRet = await execAsync(cmd, args, {
-                stdio: 'inherit',
-                cwd: process.cwd()
-            })
-        }
+        await this.execCommand(startCommand, '项目启动失败！')
     }
     async installCustomTemplate() {
         console.log('custom')
