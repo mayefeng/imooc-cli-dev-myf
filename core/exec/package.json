@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@imooc-cli-dev-myf/package": "file:../../models/package",
-    "@imooc-cli-dev-myf/log": "file:../../utils/log"
+    "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "@imooc-cli-dev-myf/utils": "file:../../utils/utils"
   },
   "bugs": {
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"

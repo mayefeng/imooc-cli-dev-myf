@@ -3,9 +3,9 @@
 module.exports = exec;
 
 const path = require('path')
-const cp = require('child_process')
 const Package = require('@imooc-cli-dev-myf/package')
 const log = require('@imooc-cli-dev-myf/log');
+const { exec: spawn } = require('@imooc-cli-dev-myf/utils');
 const { chdir } = require('process');
 
 const SETTINGS = {
@@ -116,12 +116,3 @@ async function exec() {
 
 }
 
-function spawn(command, args, options) {
-    const win32 = process.platform === 'win32'
-
-    const cmd = win32 ? 'cmd' : command
-    const cmdArgs = win32 ? ['/c'].concat(command, args) : args;
-    // cp.spawn('cmd', ['/c', 'node', '-e', code])
-    return cp.spawn(cmd, cmdArgs, options || {})
-
-}

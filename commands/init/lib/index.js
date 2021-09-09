@@ -16,7 +16,7 @@ const userHome = require('user-home')
 const Command = require('@imooc-cli-dev-myf/command')
 const Package = require('@imooc-cli-dev-myf/package')
 const log = require('@imooc-cli-dev-myf/log')
-const { spinnerStart } = require('@imooc-cli-dev-myf/utils')
+const { spinnerStart, execAsync } = require('@imooc-cli-dev-myf/utils')
 
 const getProjectTemplate = require('./getProjectTemplate')
 
@@ -72,7 +72,45 @@ class InitCommand extends Command {
     }
 
     async installNormalTemplate() {
-        console.log('normal')
+        log.verbose('templateNpm', this.templateNpm)
+        // 拷贝模板代码至当前目录
+        const spinner = spinnerStart('正在安装模板')
+        try {
+        const tempaltePath = path.resolve(this.templateNpm.cacheFilePath, 'template')
+        const targetPath = process.cwd()
+        fse.ensureDirSync(tempaltePath)
+        fse.ensureDirSync(targetPath)
+        fse.copySync(tempaltePath, targetPath)
+        } catch (e) {
+            throw e
+        } finally {
+            spinner.stop(true)
+            log.success('模板安装成功')
+        }
+        // 依赖安装
+        const { installCommand, startCommand } = this.templateInfo 
+        if (installCommand) {
+            const installCmd = installCommand.split(' ')
+            const cmd = installCmd[0]
+            const args = installCmd.slice(1)
+            const installRet = await execAsync(cmd, args, {
+                stdio: 'inherit', // 将子进程中的在主进程中打印
+                cwd: process.cwd()
+            })
+            if (installRet !== 0) {
+                throw new Error('依赖安装过程中失败！')
+            }
+        }
+        // 启动命令执行
+        if (startCommand) {
+            const startCmd = startCommand.split(' ')
+            const cmd = startCmd[0]
+            const args = startCmd.slice(1)
+            const startRet = await execAsync(cmd, args, {
+                stdio: 'inherit',
+                cwd: process.cwd()
+            })
+        }
     }
     async installCustomTemplate() {
         console.log('custom')
@@ -101,6 +139,8 @@ class InitCommand extends Command {
                 spinner.stop(true)
                 if (await templateNpm.exists()) {
                     log.success('下载模板成功')
+                    this.templateNpm = templateNpm
+                    
                 }
             }
         } else {
@@ -113,6 +153,7 @@ class InitCommand extends Command {
                 spinner.stop(true)
                 if (await templateNpm.exists()) {
                     log.success('更新模板成功')
+                    this.templateNpm = templateNpm
                 }
             }
         }
