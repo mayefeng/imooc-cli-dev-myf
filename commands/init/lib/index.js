@@ -288,68 +288,70 @@ class InitCommand extends Command {
         })
         log.verbose('type', type)
         this.template = this. template.filter(template => template.tag.includes(type))
-        // 4、获取项目基本信息
-        if (type === TYPE_PROJECT) {
-            const projectNamePrompt = {
+
+        const title = type === TYPE_PROJECT ? '项目' : '组件'
+        const projectNamePrompt = {
+            type: 'input',
+            message: `请输入${title}的名称`,
+            name: 'projectName',
+            default: '',
+            validate: function(v) {
+                const done = this.async();
+
+                setTimeout(function() {
+                // 1.输入的首字符和尾字符必须为英文字符
+                // 2.尾字符必须为英文或数字，不能为字符
+                // 3.字符仅允许”-_“
+                    if (!isValidName(v)) {
+                    done(`请输入合法的${title}名称`);
+                    return;
+                    }
+                    done(null, true);
+                }, 0);
+
+                // return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
+            },
+            filter: function(v) {
+                return v
+            }
+        }
+        const projectPrompt = []
+        if (!isProjectNameValid) {
+            projectPrompt.push(projectNamePrompt)
+        }
+        projectPrompt.push(
+            {
                 type: 'input',
-                message: '请输入项目的名称',
-                name: 'projectName',
-                default: '',
+                name: 'projectVersion',
+                message: `请输入${title}版本号`,
+                default: '1.0.0',
                 validate: function(v) {
                     const done = this.async();
 
                     setTimeout(function() {
-                    // 1.输入的首字符和尾字符必须为英文字符
-                    // 2.尾字符必须为英文或数字，不能为字符
-                    // 3.字符仅允许”-_“
-                      if (!isValidName(v)) {
-                        done('请输入合法的项目名称');
+                        if (!semver.valid(v)) {
+                        done('请输入合法的版本号');
                         return;
-                      }
-                      done(null, true);
+                        }
+                        done(null, true);
                     }, 0);
-
-                    // return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
+                    // return !!semver.valid(v)
                 },
                 filter: function(v) {
+                    if (!!semver.valid(v)) {
+                        return semver.valid(v)
+                    }
                     return v
                 }
-            }
-            const projectPrompt = []
-            if (!isProjectNameValid) {
-                projectPrompt.push(projectNamePrompt)
-            }
-            projectPrompt.push(
-                {
-                    type: 'input',
-                    name: 'projectVersion',
-                    message: '请输入项目版本号',
-                    default: '1.0.0',
-                    validate: function(v) {
-                        const done = this.async();
-
-                        setTimeout(function() {
-                          if (!semver.valid(v)) {
-                            done('请输入合法的版本号');
-                            return;
-                          }
-                          done(null, true);
-                        }, 0);
-                        // return !!semver.valid(v)
-                    },
-                    filter: function(v) {
-                        if (!!semver.valid(v)) {
-                            return semver.valid(v)
-                        }
-                        return v
-                    }
-                },
-                {
-                    type: 'list',
-                    name: 'projectTemplate',
-                    message: '请选择项目模板',
-                    choices: this.createTemplateChoices()
-                })
+            },
+            {
+                type: 'list',
+                name: 'projectTemplate',
+                message: `请选择${title}模板`,
+                choices: this.createTemplateChoices()
+            })
+        if (type === TYPE_PROJECT) {
+            // 4、获取项目的基本信息
             const project = await inquirer.prompt(projectPrompt)
             projectInfo = {
                 ...projectInfo,
@@ -357,7 +359,33 @@ class InitCommand extends Command {
                 ...project
             }
         } else if (type === TYPE_COMPONENT) {
+            const descriptionPrompt = 
+            {
+                type: 'input',
+                name: 'componentDescription',
+                message: '请输入组件描述信息',
+                default: '',
+                validate: function(v) {
+                    const done = this.async();
 
+                    setTimeout(function() {
+                        if (!v) {
+                        done('请输入组件描述信息');
+                        return;
+                        }
+                        done(null, true);
+                    }, 0);
+                    // return !!semver.valid(v)
+                },
+            }
+            projectPrompt.push(descriptionPrompt)
+            // 4、获取组件的基本信息
+            const component = await inquirer.prompt(projectPrompt)
+            projectInfo = {
+                ...projectInfo,
+                type,
+                ...component
+            }
         }
         // 生成classname
         if (projectInfo.projectName) {
@@ -366,6 +394,9 @@ class InitCommand extends Command {
         }
         if (projectInfo.projectVersion) {
             projectInfo.version = projectInfo.projectVersion
+        }
+        if (projectInfo.componentDescription) {
+            projectInfo.description = projectInfo.componentDescription
         }
         return projectInfo
     }
