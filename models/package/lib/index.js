@@ -96,6 +96,9 @@ class Package{
                     }
                 ],
             })
+            // npminstall可能失败，失败的时候是不需要更新的
+            this.packageVersion = latestPackageVersion
+        } else {
             this.packageVersion = latestPackageVersion
         }
     }

@@ -11,6 +11,8 @@ const fs = require('fs')
 const path = require('path')
 const inquirer = require('inquirer')
 const fse = require('fs-extra')
+const glob = require('glob')
+const ejs = require('ejs')
 const semver = require('semver')
 const userHome = require('user-home')
 const Command = require('@imooc-cli-dev-myf/command')
@@ -50,6 +52,9 @@ class InitCommand extends Command {
             }
         } catch (e) {
             log.error(e.message)
+            if (process.env.LOG_LEVEL === 'verbose') {
+                console.log(e)
+            } 
         }
     }
 
@@ -100,6 +105,39 @@ class InitCommand extends Command {
         return ret
     }
 
+    async ejsRender(options) {
+        const dir = process.cwd()
+        return new Promise((resolve, reject) => {
+            glob('**', {
+                cwd: dir,
+                ignore: options.ignore,
+                nodir: true,
+            }, (err, files) => {
+                if (err) {
+                    reject(err)
+                }
+                console.log(files)
+                Promise.all(files.map(file => {
+                    const filePath = path.join(dir, file)
+                    return new Promise((resolve1, reject1) => {
+                        ejs.renderFile(filePath, this.projectInfo, {}, (err, result) => {
+                            if (err) {
+                                reject1(err)
+                            } else {
+                                fse.writeFileSync(filePath, result)
+                                resolve1(result)
+                            }
+                        })
+                    })
+                })).then(() => {
+                    resolve()
+                }).catch(err => {
+                    reject(err)
+                })
+            })
+        })
+    }
+
     async installNormalTemplate() {
         log.verbose('templateNpm', this.templateNpm)
         // 拷贝模板代码至当前目录
@@ -116,6 +154,9 @@ class InitCommand extends Command {
             spinner.stop(true)
             log.success('模板安装成功')
         }
+        const templateIgnore = this.templateInfo.ignore || []
+        const ignore = ['**/node_modules/**', ...templateIgnore]
+        await this.ejsRender({ ignore })
         const { installCommand, startCommand } = this.templateInfo
         // 依赖安装
         await this.execCommand(installCommand, '依赖安装过程中失败！')
@@ -219,7 +260,15 @@ class InitCommand extends Command {
     }
 
     async getProjectInfo() {
+        function isValidName(v) {
+            return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
+        }
         let projectInfo = {}
+        let isProjectNameValid = false
+        if (isValidName(this.projectName)) {
+            isProjectNameValid = true
+            projectInfo.projectName = this.projectName
+        }
         // 3、选择创建项目或组件
         const { type } = await inquirer.prompt({
             type: 'list',
@@ -238,34 +287,39 @@ class InitCommand extends Command {
             ]
         })
         log.verbose('type', type)
+        this.template = this. template.filter(template => template.tag.includes(type))
         // 4、获取项目基本信息
         if (type === TYPE_PROJECT) {
-            const project = await inquirer.prompt([
-                {
-                    type: 'input',
-                    message: '请输入项目的名称',
-                    name: 'projectName',
-                    default: '',
-                    validate: function(v) {
-                        const done = this.async();
+            const projectNamePrompt = {
+                type: 'input',
+                message: '请输入项目的名称',
+                name: 'projectName',
+                default: '',
+                validate: function(v) {
+                    const done = this.async();
 
-                        setTimeout(function() {
-                        // 1.输入的首字符和尾字符必须为英文字符
-                        // 2.尾字符必须为英文或数字，不能为字符
-                        // 3.字符仅允许”-_“
-                          if (!/^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)) {
-                            done('请输入合法的项目名称');
-                            return;
-                          }
-                          done(null, true);
-                        }, 0);
+                    setTimeout(function() {
+                    // 1.输入的首字符和尾字符必须为英文字符
+                    // 2.尾字符必须为英文或数字，不能为字符
+                    // 3.字符仅允许”-_“
+                      if (!isValidName(v)) {
+                        done('请输入合法的项目名称');
+                        return;
+                      }
+                      done(null, true);
+                    }, 0);
 
-                        // return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
-                    },
-                    filter: function(v) {
-                        return v
-                    }
+                    // return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
                 },
+                filter: function(v) {
+                    return v
+                }
+            }
+            const projectPrompt = []
+            if (!isProjectNameValid) {
+                projectPrompt.push(projectNamePrompt)
+            }
+            projectPrompt.push(
                 {
                     type: 'input',
                     name: 'projectVersion',
@@ -295,14 +349,23 @@ class InitCommand extends Command {
                     name: 'projectTemplate',
                     message: '请选择项目模板',
                     choices: this.createTemplateChoices()
-                }
-            ])
+                })
+            const project = await inquirer.prompt(projectPrompt)
             projectInfo = {
+                ...projectInfo,
                 type,
                 ...project
             }
         } else if (type === TYPE_COMPONENT) {
 
+        }
+        // 生成classname
+        if (projectInfo.projectName) {
+            projectInfo.name = projectInfo.projectName
+            projectInfo.className = require('kebab-case')(projectInfo.projectName).replace(/^-/, '')
+        }
+        if (projectInfo.projectVersion) {
+            projectInfo.version = projectInfo.projectVersion
         }
         return projectInfo
     }
