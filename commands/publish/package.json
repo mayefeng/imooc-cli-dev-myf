@@ -23,6 +23,11 @@
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
+  "dependencies": {
+    "@imooc-cli-dev-myf/command": "file:../../models/command",
+    "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "fs-extra": "^10.0.0"
+  },
   "bugs": {
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"
   }
