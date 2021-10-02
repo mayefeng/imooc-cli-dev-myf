@@ -47,6 +47,10 @@ function regiserCommand() {
         .option('-f, --force', '是否强制初始化项目')
         .action(exec)
 
+    program
+        .command('publish')
+        .action(exec)
+
     // 开启debug模式的监听
     program.on('option:debug', () => {
         // console.log(program.debug)

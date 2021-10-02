@@ -10,7 +10,8 @@ const { chdir } = require('process');
 
 const SETTINGS = {
     // init: '@imooc-cli-dev-myf/init'
-    init: '@imooc-cli/init'
+    init: '@imooc-cli/init',
+    publish: '@imooc-cli/publish',
 }
 
 const CACHE_DIR = 'dependencies/'
