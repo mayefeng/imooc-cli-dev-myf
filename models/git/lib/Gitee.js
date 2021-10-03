@@ -59,6 +59,10 @@ class Gitee extends GitServer {
     getTokenHelpUrl() {
         return 'https://gitee.com/help/articles/4191'
     }
+
+    getRemote(login, name) {
+        return `git@gitee.com:${login}/${name}.git`
+    }
 }
 
 module.exports = Gitee

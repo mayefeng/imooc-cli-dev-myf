@@ -53,6 +53,10 @@ class Github extends GitServer {
     getTokenHelpUrl() {
         return 'https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh'
     }
+
+    getRemote(login, name) {
+        return `git@github.com:${login}/${name}.git`
+    }
 }
 
 module.exports = Github

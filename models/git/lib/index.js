@@ -110,6 +110,35 @@ class Git {
         await this.checkRepo()
         // 检查并创建.gitigonre文件
         this.checkGitIgnore()
+        // 完成本地仓库初始化
+        await this.init()
+    }
+
+    async init() {
+        if (await this.getRemote()) {
+            return
+        }
+        await this.initAndAddRemote()
+    }
+
+    async getRemote() {
+        const gitPath = path.resolve(this.dir, GIT_ROOT_DIR)
+        this.remote = this.gitServer.getRemote(this.login, this.name)
+        if (fs.existsSync(gitPath)) {
+            log.success('git已完成初始化')
+            return true
+        }
+    }
+
+    async initAndAddRemote() {
+        log.info('执行git初始化')
+        await this.git.init(this.dir)
+        log.info('添加git remote')
+        const remotes = await this.git.getRemotes()
+        log.verbose('git remotes', remotes)
+        if (!remotes.find(item => item.name === 'origin')) {
+            await this.git.addRemote('origin', this.remote)
+        }
     }
 
     checkHomePath() {
@@ -293,10 +322,6 @@ pnpm-debug.log*
         const filePath = path.resolve(rootDir, file)
         fse.ensureDirSync(rootDir)
         return filePath
-    }
-
-    init() {
-        console.log('init')
     }
 }
 
