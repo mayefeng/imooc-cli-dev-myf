@@ -1,8 +1,26 @@
-const GitServer = require("./gitServer");
+const GitServer = require('./gitServer')
+const GiteeRequest = require('./GiteeRequest')
 
 class Gitee extends GitServer {
     constructor() {
         super('gitee')
+    }
+
+    setToken(token) {
+        super.setToken(token)
+        this.request = new GiteeRequest(token)
+
+    }
+
+    getUser() {
+        return this.request.get('/user')
+    }
+
+    getOrg(username) {
+        return this.request.get(`/users/${username}/orgs`, {
+            page: 1,
+            per_page: 100
+        })
     }
 
     getSSHKeysUrl() {

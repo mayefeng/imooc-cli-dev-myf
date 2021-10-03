@@ -29,6 +29,7 @@
   "dependencies": {
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
     "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
+    "axios": "^0.22.0",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.1.2",
     "simple-git": "^2.46.0",

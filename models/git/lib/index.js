@@ -46,6 +46,8 @@ class Git {
         this.git = SimpleGit(dir)
         this.gitServer = null
         this.homePath = null
+        this.user = null
+        this.orgs = null
         this.refreshServer = refreshServer
         this.refreshToken = refreshToken
     }
@@ -57,6 +59,8 @@ class Git {
         await this.checkGitServer()
         // 获取远程仓库token
         await this.checkGitToken()
+        // 获取远程仓库用户和组织信息：帮助我们确认在创建仓库库的时候调用哪个api
+        await this.getUserAndOrgs()
     }
 
     checkHomePath() {
@@ -114,6 +118,18 @@ class Git {
         }
         this.token = token
         this.gitServer.setToken(token)
+    }
+
+    async getUserAndOrgs() {
+        this.user = await this.gitServer.getUser()
+        if (!this.user) {
+            throw new Error('用户信息获取失败！')
+        }
+        this.orgs = await this.gitServer.getOrg(this.user.login)
+        if (!this.orgs) {
+            throw new Error('组织信息获取失败！')
+        }
+        log.success(this.gitServer.type + ' 用户和组织信息获取成功')
     }
 
     createGitServer(gitServer) {

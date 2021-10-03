@@ -8,8 +8,8 @@ class GitServer {
         this.token = token
     }
 
-    setToken() {
-        error('setToken')
+    setToken(token) {
+        this.token = token
     }
 
     createRepo() {
