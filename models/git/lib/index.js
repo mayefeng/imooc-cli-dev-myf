@@ -18,6 +18,7 @@ const GIT_SERVER_FILE = '.git_server'
 const GIT_TOKEN_FILE = '.git_token'
 const GIT_OWN_FILE = '.git_own'
 const GIT_LOGIN_FILE = '.git_login'
+const GIT_IGNORE_FILE = '.gitignore'
 
 const GITHUB = 'github'
 const GITEE = 'gitee'
@@ -107,6 +108,8 @@ class Git {
         await this.checkGitOwner()
         // 检查并创建远程仓库
         await this.checkRepo()
+        // 检查并创建.gitigonre文件
+        this.checkGitIgnore()
     }
 
     checkHomePath() {
@@ -173,7 +176,6 @@ class Git {
         }
         log.verbose('user', this.user)
         this.orgs = await this.gitServer.getOrg(this.user.login)
-        console.log(this.orgs)
         if (!this.orgs) {
             throw new Error('组织信息获取失败！')
         }
@@ -244,6 +246,37 @@ class Git {
         }
         log.verbose('repo', repo);
         this.repo = repo;
+    }
+
+    checkGitIgnore() {
+        const gitIgnore = path.resolve(this.dir, GIT_IGNORE_FILE)
+        if (!fs.existsSync(gitIgnore)) {
+            writeFile(gitIgnore, `.DS_Store
+node_modules
+/dist
+
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+`)
+            log.success(`自动写入${GIT_IGNORE_FILE}文件成功`)
+        }
     }
 
     createGitServer(gitServer) {
