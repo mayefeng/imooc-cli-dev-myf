@@ -49,6 +49,7 @@ function regiserCommand() {
 
     program
         .command('publish')
+        .option('--refreshServer', '强制更新远程的Git仓库')
         .action(exec)
 
     // 开启debug模式的监听
@@ -132,7 +133,7 @@ function createDefaultConfig() {
     const cliConfig = {
         home: userHome
     }
-    console.log('process.env.CLI_HOME', process.env.CLI_HOME)
+    // console.log('process.env.CLI_HOME', process.env.CLI_HOME)
     if (process.env.CLI_HOME) {
         cliConfig['cliHome'] = path.join(userHome, process.env.CLI_HOME)
     } else {

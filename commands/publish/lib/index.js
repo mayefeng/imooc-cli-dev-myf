@@ -10,17 +10,20 @@ const Git = require('@imooc-cli-dev-myf/git')
 class PublishCommand extends Command {
     init() {
         // 处理参数
-        console.log('publish', this._argv)
+        console.log('publish', this._argv, this._cmd)
+        this.options = { 
+            refreshServer: this._cmd.refreshServer
+        }
     }
 
-    exec() {
+    async exec() {
         try {
             const startTime = new Date().getTime()
             // 1.初始检查
             this.prepare()
             // 2.Git Flow自动化
-            const git = new Git(this.projectInfo)
-            git.prepare()
+            const git = new Git(this.projectInfo, this.options)
+            await git.prepare()
             // 3.云构建和云发布
             const endTime = new Date().getTime()
             log.info('本次发布耗时：', Math.floor(endTime - startTime) / 1000 + '秒')
