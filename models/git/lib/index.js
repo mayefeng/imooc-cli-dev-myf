@@ -173,6 +173,7 @@ class Git {
         }
         log.verbose('user', this.user)
         this.orgs = await this.gitServer.getOrg(this.user.login)
+        console.log(this.orgs)
         if (!this.orgs) {
             throw new Error('组织信息获取失败！')
         }
@@ -226,7 +227,7 @@ class Git {
                 if (this.owner === REPO_OWNER_USER) {
                     repo = await this.gitServer.createRepo(this.name)
                 } else {
-                    this.gitServer.createOrgRepo(this.name, this.login)
+                    repo = await this.gitServer.createOrgRepo(this.name, this.login)
                 }
             } catch (e) {
                 log.error(e)

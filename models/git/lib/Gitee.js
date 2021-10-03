@@ -14,6 +14,9 @@ class Gitee extends GitServer {
 
     getUser() {
         return this.request.get('/user')
+        .then(response => {
+            return this.handleResponse(response);
+        });
     }
 
     getOrg(username) {
@@ -21,6 +24,9 @@ class Gitee extends GitServer {
             page: 1,
             per_page: 100
         })
+        .then(response => {
+            return this.handleResponse(response);
+        });
     }
 
     getRepo(login, name) {
@@ -33,6 +39,15 @@ class Gitee extends GitServer {
 
     createRepo(name) {
         return this.request.post('/user/repos', {
+            name,
+        })
+        .then(response => {
+            return this.handleResponse(response);
+        });
+    }
+
+    createOrgRepo(name, login) {
+        return this.request.post(`/orgs/${login}/repos`, {
             name,
         })
     }

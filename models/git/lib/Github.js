@@ -38,6 +38,14 @@ class Github extends GitServer {
         })
     }
 
+    createOrgRepo(name, login) {
+        return this.request.post(`/orgs/${login}/repos`, {
+            name,
+        }, {
+            Accept: 'application/vnd.github.v3+json',
+        })
+    }
+
     getTokenUrl() {
         return 'https://github.com/settings/tokens'
     }
