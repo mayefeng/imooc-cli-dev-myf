@@ -24,6 +24,20 @@ class Github extends GitServer {
         })
     }
 
+    getRepo(login, name) {
+        return this.request
+            .get(`/repos/${login}/${name}`)
+            .then(response => {
+                return this.handleResponse(response);
+            });
+    }
+
+    createRepo(name) {
+        return this.request.post('/user/repos', {
+            name,
+        })
+    }
+
     getTokenUrl() {
         return 'https://github.com/settings/tokens'
     }

@@ -52,7 +52,7 @@ class GitServer {
         if (this.isHttpResponse(response) && response.status !== 200) {
             return null
         } else {
-            return response.data
+            return response.data || response
         }
     }
 }
