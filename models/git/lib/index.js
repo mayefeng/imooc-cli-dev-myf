@@ -6,6 +6,7 @@ const SimpleGit = require('simple-git')
 const fse = require('fs-extra')
 const userHome = require('user-home')
 const inquirer = require('inquirer')
+const terminalLink = require('terminal-link')
 const log = require('@imooc-cli-dev-myf/log')
 const { readFile, writeFile } = require('@imooc-cli-dev-myf/utils');
 const Github = require('./Github');
@@ -14,6 +15,7 @@ const Gitee = require('./Gitee');
 const DEFAULT_CLI_HOME = '.imooc-cli-dev-myf'
 const GIT_ROOT_DIR = '.git'
 const GIT_SERVER_FILE = '.git_server'
+const GIT_TOKEN_FILE = '.git_token'
 const GITHUB = 'github'
 const GITEE = 'gitee'
 const GITLAB = 'gitlab'
@@ -34,7 +36,10 @@ const GIT_SERVER_TYPE = [
 ]
 
 class Git {
-    constructor({name, version, dir}, { refreshServer = false }) {
+    constructor({name, version, dir}, { 
+        refreshServer = false,
+        refreshToken = false
+    }) {
         this.name = name
         this.version = version
         this.dir = dir
@@ -42,6 +47,7 @@ class Git {
         this.gitServer = null
         this.homePath = null
         this.refreshServer = refreshServer
+        this.refreshToken = refreshToken
     }
 
     async prepare() {
@@ -49,6 +55,8 @@ class Git {
         this.checkHomePath()
         // 检查用户远程仓库类型
         await this.checkGitServer()
+        // 获取远程仓库token
+        await this.checkGitToken()
     }
 
     checkHomePath() {
@@ -86,6 +94,26 @@ class Git {
         if (!this.gitServer) {
             throw new Error('GitServer初始化失败！')
         }
+    }
+
+    async checkGitToken() {
+        const tokenPath = this.createPath(GIT_TOKEN_FILE)
+        let token = readFile(tokenPath)
+        if (!token || this.refreshToken) {
+            log.warn(this.gitServer.type + ' token未生成', '请先生成' + this.gitServer.type + ' token，' + terminalLink('链接', this.gitServer.getTokenHelpUrl()))
+            token = (await inquirer.prompt({
+                type: 'password',
+                name: 'token',
+                message: '请将token复制到这里',
+                default: '',
+            })).token
+            writeFile(tokenPath, token)
+            log.success('token写入成功', `${token} -> ${tokenPath}`)
+        } else {
+            log.success('token获取成功', tokenPath)
+        }
+        this.token = token
+        this.gitServer.setToken(token)
     }
 
     createGitServer(gitServer) {

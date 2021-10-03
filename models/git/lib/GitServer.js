@@ -31,6 +31,14 @@ class GitServer {
     getOrg() {
         error('getOrg')
     }
+    
+    getSSHKeysUrl() {
+        error('getSSHKeysUrl')
+    }
+    
+    getTokenHelpUrl() {
+        error('getTokenHelpUrl')
+    }
 }
 
 module.exports = GitServer

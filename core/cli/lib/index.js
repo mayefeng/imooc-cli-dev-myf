@@ -50,6 +50,7 @@ function regiserCommand() {
     program
         .command('publish')
         .option('--refreshServer', '强制更新远程的Git仓库')
+        .option('--refreshToken', '强制更新远程仓库token')
         .action(exec)
 
     // 开启debug模式的监听
