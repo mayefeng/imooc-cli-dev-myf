@@ -7,7 +7,9 @@ const fse = require('fs-extra')
 const userHome = require('user-home')
 const inquirer = require('inquirer')
 const log = require('@imooc-cli-dev-myf/log')
-const { readFile, writeFile } = require('@imooc-cli-dev-myf/utils')
+const { readFile, writeFile } = require('@imooc-cli-dev-myf/utils');
+const Github = require('./Github');
+const Gitee = require('./Gitee');
 
 const DEFAULT_CLI_HOME = '.imooc-cli-dev-myf'
 const GIT_ROOT_DIR = '.git'
@@ -81,10 +83,18 @@ class Git {
             log.success('git server获取成功', gitServer)
         }
         this.gitServer = this.createGitServer(gitServer)
+        if (!this.gitServer) {
+            throw new Error('GitServer初始化失败！')
+        }
     }
 
     createGitServer(gitServer) {
-
+        if (gitServer === GITHUB) {
+            return new Github()
+        } else if (gitServer === GITEE) {
+            return new Gitee()
+        }
+        return null
     }
 
     createPath(file) {
