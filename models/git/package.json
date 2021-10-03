@@ -27,6 +27,9 @@
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"
   },
   "dependencies": {
-    "simple-git": "^2.46.0"
+    "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "fs-extra": "^10.0.0",
+    "simple-git": "^2.46.0",
+    "user-home": "^3.0.0"
   }
 }

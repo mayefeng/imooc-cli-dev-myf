@@ -132,6 +132,7 @@ function createDefaultConfig() {
     const cliConfig = {
         home: userHome
     }
+    console.log('process.env.CLI_HOME', process.env.CLI_HOME)
     if (process.env.CLI_HOME) {
         cliConfig['cliHome'] = path.join(userHome, process.env.CLI_HOME)
     } else {
