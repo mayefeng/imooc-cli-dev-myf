@@ -104,7 +104,7 @@ class Git {
         const tokenPath = this.createPath(GIT_TOKEN_FILE)
         let token = readFile(tokenPath)
         if (!token || this.refreshToken) {
-            log.warn(this.gitServer.type + ' token未生成', '请先生成' + this.gitServer.type + ' token，' + terminalLink('链接', this.gitServer.getTokenHelpUrl()))
+            log.warn(this.gitServer.type + ' token未生成', '请先生成' + this.gitServer.type + ' token，' + terminalLink('链接', this.gitServer.getTokenUrl()))
             token = (await inquirer.prompt({
                 type: 'password',
                 name: 'token',
@@ -125,10 +125,12 @@ class Git {
         if (!this.user) {
             throw new Error('用户信息获取失败！')
         }
+        log.verbose('user', this.user)
         this.orgs = await this.gitServer.getOrg(this.user.login)
         if (!this.orgs) {
             throw new Error('组织信息获取失败！')
         }
+        log.verbose('orgs', this.orgs)
         log.success(this.gitServer.type + ' 用户和组织信息获取成功')
     }
 

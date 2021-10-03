@@ -32,8 +32,8 @@ class GitServer {
         error('getOrg')
     }
     
-    getSSHKeysUrl() {
-        error('getSSHKeysUrl')
+    getTokenUrl() {
+        error('getTokenUrl')
     }
     
     getTokenHelpUrl() {
