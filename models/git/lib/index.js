@@ -8,7 +8,7 @@ const userHome = require('user-home')
 const inquirer = require('inquirer')
 const terminalLink = require('terminal-link')
 const log = require('@imooc-cli-dev-myf/log')
-const { readFile, writeFile } = require('@imooc-cli-dev-myf/utils');
+const { readFile, writeFile, spinnerStart } = require('@imooc-cli-dev-myf/utils');
 const Github = require('./Github');
 const Gitee = require('./Gitee');
 
@@ -84,6 +84,8 @@ class Git {
         this.owner = null
         // 远程仓库登录名
         this.login = null
+        // 远程仓库信息
+        this.repo = null
         // 是否强制刷新远程仓库类型
         this.refreshServer = refreshServer
         // 是否强制刷新远程仓库token
@@ -103,6 +105,8 @@ class Git {
         await this.getUserAndOrgs()
         // 确认远程仓库类型
         await this.checkGitOwner()
+        // 检查并创建远程仓库
+        await this.checkRepo()
     }
 
     checkHomePath() {
@@ -212,6 +216,33 @@ class Git {
         }
         this.owner = owner
         this.login = login
+    }
+
+    async checkRepo() {
+        let repo = await this.gitServer.getRepo(this.login, this.name)
+        if (!repo) {
+            let spinner = spinnerStart('开始创建远程仓库...')
+            try {
+                if (this.owner === REPO_OWNER_USER) {
+                    repo = await this.gitServer.createRepo(this.name)
+                } else {
+                    this.gitServer.createOrgRepo(this.name, this.login)
+                }
+            } catch (e) {
+                log.error(e)
+            } finally {
+                spinner.stop(true)
+            }
+            if (repo) {
+                log.success('远程仓库创建成功');
+            } else {
+                throw new Error('远程仓库创建失败');
+            }
+        } else {
+            log.success('远程仓库信息获取成功');
+        }
+        log.verbose('repo', repo);
+        this.repo = repo;
     }
 
     createGitServer(gitServer) {

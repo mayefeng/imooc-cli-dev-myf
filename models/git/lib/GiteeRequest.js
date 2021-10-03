@@ -10,7 +10,7 @@ class GiteeRequest{
         })
         this.service.interceptors.response.use(
             response => {
-                return response.data
+                return response
             },
             error => {
                 if (error.response && error.response.data) {
@@ -30,6 +30,18 @@ class GiteeRequest{
                 access_token: this.token,
             },
             method: 'get',
+            headers
+        })
+    }
+
+    post(url, data, headers) {
+        return this.service({
+            url,
+            params: {
+                access_token: this.token,
+            },
+            data,
+            method: 'post',
             headers
         })
     }

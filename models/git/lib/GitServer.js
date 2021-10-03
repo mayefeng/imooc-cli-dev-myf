@@ -12,11 +12,11 @@ class GitServer {
         this.token = token
     }
 
-    createRepo() {
+    createRepo(name) {
         error('createRepo')
     }
 
-    createOrgRepo() {
+    createOrgRepo(name, login) {
         error('createOrgRepo')
     }
 
@@ -31,6 +31,10 @@ class GitServer {
     getOrg() {
         error('getOrg')
     }
+
+    getRepo(login, name) {
+        error('getRepo')
+    }
     
     getTokenUrl() {
         error('getTokenUrl')
@@ -38,6 +42,18 @@ class GitServer {
     
     getTokenHelpUrl() {
         error('getTokenHelpUrl')
+    }
+
+    isHttpResponse = (response) => {
+        return response && response.status
+    }
+
+    handleResponse = (response) => {
+        if (this.isHttpResponse(response) && response.status !== 200) {
+            return null
+        } else {
+            return response.data
+        }
     }
 }
 
