@@ -16,9 +16,14 @@ const DEFAULT_CLI_HOME = '.imooc-cli-dev-myf'
 const GIT_ROOT_DIR = '.git'
 const GIT_SERVER_FILE = '.git_server'
 const GIT_TOKEN_FILE = '.git_token'
+const GIT_OWN_FILE = '.git_own'
+const GIT_LOGIN_FILE = '.git_login'
+
 const GITHUB = 'github'
 const GITEE = 'gitee'
 const GITLAB = 'gitlab'
+const REPO_OWNER_USER = 'user'
+const REPO_OWNER_ORG = 'org'
 
 const GIT_SERVER_TYPE = [
     {
@@ -35,21 +40,56 @@ const GIT_SERVER_TYPE = [
     },
 ]
 
+const GIT_OWNER_TYPE = [
+    {
+        name: '个人',
+        value: REPO_OWNER_USER,
+    },
+    {
+        name: '组织',
+        value: REPO_OWNER_ORG
+    },
+]
+
+const GIT_OWNER_TYPE_ONLY = [
+    {
+        name: '个人',
+        value: REPO_OWNER_USER,
+    },
+]
+
 class Git {
     constructor({name, version, dir}, { 
         refreshServer = false,
-        refreshToken = false
+        refreshToken = false,
+        refreshOwner = false
     }) {
+        // 项目名称
         this.name = name
+        // 项目版本
         this.version = version
+        // 源码目录
         this.dir = dir
+        // SimpleGit实例
         this.git = SimpleGit(dir)
+        // GitServer实例
         this.gitServer = null
+        // 本地缓存目录
         this.homePath = null
+        // 用户信息
         this.user = null
+        // 用户所属组织列表
         this.orgs = null
+        // 远程仓库类型
+        this.owner = null
+        // 远程仓库登录名
+        this.login = null
+        // 是否强制刷新远程仓库类型
         this.refreshServer = refreshServer
+        // 是否强制刷新远程仓库token
         this.refreshToken = refreshToken
+        // 是否强制刷新远程仓库类型
+        this.refreshOwner = refreshOwner
     }
 
     async prepare() {
@@ -61,6 +101,8 @@ class Git {
         await this.checkGitToken()
         // 获取远程仓库用户和组织信息：帮助我们确认在创建仓库库的时候调用哪个api
         await this.getUserAndOrgs()
+        // 确认远程仓库类型
+        await this.checkGitOwner()
     }
 
     checkHomePath() {
@@ -132,6 +174,44 @@ class Git {
         }
         log.verbose('orgs', this.orgs)
         log.success(this.gitServer.type + ' 用户和组织信息获取成功')
+    }
+
+    async checkGitOwner() {
+        const ownerPath = this.createPath(GIT_OWN_FILE)
+        const loginPath = this.createPath(GIT_LOGIN_FILE)
+        let owner = readFile(ownerPath)
+        let login = readFile(loginPath)
+        if (!owner || !login || this.refreshOwner) {
+            owner = (await inquirer.prompt({
+                type: 'list',
+                name: 'owner',
+                message: '请选择您远程仓库类型',
+                default: REPO_OWNER_USER,
+                choices: this.orgs.length > 0 ? GIT_OWNER_TYPE : GIT_OWNER_TYPE_ONLY
+            })).owner
+            if (owner === REPO_OWNER_USER) {
+                login = this.user.login
+            } else {
+                login = (await inquirer.prompt({
+                    type: 'list',
+                    name: 'login',
+                    message: '请选择',
+                    choices: this.orgs.map(org => ({
+                        name: org.login,
+                        value: org.login,
+                    }))
+                })).login
+            }
+            writeFile(ownerPath, owner)
+            log.success('owner写入成功', `${owner} -> ${ownerPath}`)
+            writeFile(loginPath, login)
+            log.success('login写入成功', `${login} -> ${loginPath}`)
+        } else {
+            log.success('owner获取成功', owner)
+            log.success('login获取成功', login)
+        }
+        this.owner = owner
+        this.login = login
     }
 
     createGitServer(gitServer) {
