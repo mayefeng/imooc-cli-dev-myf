@@ -133,7 +133,7 @@ class Git {
         // 2.检查stash区
         await this.checkStash()
         // 3.检查代码冲突
-
+        await this.checkConflicted()
         // 2.在开发分支上提交代码
         // 3.合并远程开发分支
         // 4.推送开发分支
