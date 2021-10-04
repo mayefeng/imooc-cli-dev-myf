@@ -7,6 +7,7 @@ const fse = require('fs-extra')
 const userHome = require('user-home')
 const inquirer = require('inquirer')
 const terminalLink = require('terminal-link')
+const semver = require('semver')
 const log = require('@imooc-cli-dev-myf/log')
 const { readFile, writeFile, spinnerStart } = require('@imooc-cli-dev-myf/utils');
 const Github = require('./Github');
@@ -25,6 +26,8 @@ const GITEE = 'gitee'
 const GITLAB = 'gitlab'
 const REPO_OWNER_USER = 'user'
 const REPO_OWNER_ORG = 'org'
+const VERSION_RELEASE = 'release'
+const VERSION_DEVELOP = 'dev'
 
 const GIT_SERVER_TYPE = [
     {
@@ -120,6 +123,51 @@ class Git {
         }
         await this.initAndAddRemote()
         await this.initCommit()
+    }
+
+    async commit() {
+        // 1.生成开发分支
+        await this.getCorrectVersion()
+        // 2.在开发分支上提交diamante
+        // 3.合并远程开发分支
+        // 4.推送开发分支
+    }
+
+    async getCorrectVersion() {
+        // 1.获取远程发布分支
+        // 规范 release/x.y.z, dev/x.y.z
+        // 版本号递增规范：major/minor/patch
+        log.info('获取代码分支')
+        const remoteBranchList = await this.getRemoteBranchList(VERSION_RELEASE)
+        let releaseVersion = null
+        if (remoteBranchList && remoteBranchList.length > 0) {
+            releaseVersion = remoteBranchList[0]
+        }
+        log.verbose('线上最新版本号', releaseVersion)
+
+    }
+
+    async getRemoteBranchList(type) {
+        const remoteList = await this.git.listRemote(['--refs'])
+        let reg
+        if (type === VERSION_RELEASE) {
+            reg = /.+?refs\/tags\/release\/(\d+\.\d+\.\d+)/g
+        } else {
+
+        }
+        return remoteList.split('\n').map(remote => {
+            const match = reg.exec(remote)
+            reg.lastIndex = 0
+            if (match && semver.valid(match[1])) {
+                return match[1]
+            }
+        }).filter(_ => _).sort((a, b) => {
+            if (semver.lte(b, a)) {
+                if (a === b) return 0
+                return -1
+            }
+            return 1
+        })
     }
 
     async initCommit() {
