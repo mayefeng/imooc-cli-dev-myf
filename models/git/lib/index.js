@@ -96,6 +96,8 @@ class Git {
         this.refreshToken = refreshToken
         // 是否强制刷新远程仓库类型
         this.refreshOwner = refreshOwner
+        // 本地开发分支
+        this.branch = null
     }
 
     async prepare() {
@@ -144,7 +146,50 @@ class Git {
             releaseVersion = remoteBranchList[0]
         }
         log.verbose('线上最新版本号', releaseVersion)
+        // 2.生成本地开发分支
+        const devVersion = this.version
+        if (!releaseVersion) {
+            this.branch = `${VERSION_DEVELOP}/${devVersion}`
+        } else if (semver.gt(this.version, releaseVersion)) {
+            log.info('当前版本大于线上最新版本', `${devVersion} >= ${releaseVersion}`)
+            this.branch = `${VERSION_DEVELOP}/${devVersion}`
+        } else {
+            log.info('当前线上版本大于本地版本', `${releaseVersion} > ${devVersion}`)
+            const incType = (await inquirer.prompt({
+                type: 'list',
+                name: 'incType',
+                message: '自动升级版本，请选择升级版本类型',
+                default: 'patch',
+                choices: [
+                    {
+                        name: `小版本（${releaseVersion} -> ${semver.inc(releaseVersion, 'patch')}）`,
+                        value: 'patch',
+                    },
+                    {
+                        name: `中版本（${releaseVersion} -> ${semver.inc(releaseVersion, 'minor')}）`,
+                        value: 'minor'
+                    },
+                    {
+                        name: `大版本（${releaseVersion} -> ${semver.inc(releaseVersion, 'major')}）`,
+                        value: 'major'
+                    },
+                ]
+            })).incType
+            const incVersion = semver.inc(releaseVersion, incType)
+            this.branch = `${VERSION_DEVELOP}/${incVersion}`
+            this.version = incVersion
+        }
+        log.verbose('本地开发分支', this.branch)
+        // 3.将version同步到package.json
+        this.syncVersionToPackageJson()
+    }
 
+    syncVersionToPackageJson() {
+        const pkg = fse.readJsonSync(`${this.dir}/package.json`)
+        if (pkg && pkg.version !== this.version) {
+            pkg.version = this.version
+            fse.writeJsonSync(`${this.dir}/package.json`, pkg, { spaces: 2})
+        }
     }
 
     async getRemoteBranchList(type) {
