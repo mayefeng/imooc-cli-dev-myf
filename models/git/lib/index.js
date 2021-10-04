@@ -130,9 +130,22 @@ class Git {
     async commit() {
         // 1.生成开发分支
         await this.getCorrectVersion()
-        // 2.在开发分支上提交diamante
+        // 2.检查stash区
+        await this.checkStash()
+        // 3.检查代码冲突
+
+        // 2.在开发分支上提交代码
         // 3.合并远程开发分支
         // 4.推送开发分支
+    }
+
+    async checkStash() {
+        log.info('检查stash记录')
+        const stashList = await this.git.stashList()
+        if (stashList.all.length > 0) {
+            await this.git.stash(['pop'])
+            log.success('stash pop成功')
+        }
     }
 
     async getCorrectVersion() {
