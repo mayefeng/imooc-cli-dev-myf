@@ -2,11 +2,21 @@
 
 const io = require('socket.io-client')
 const log = require('@imooc-cli-dev-myf/log')
+const get = require('lodash/get')
 
 const WS_SERVER = 'http://127.0.0.1:7001'
 // const WS_SERVER = 'http://book.youbaobao.xyz:7001'
 const TIME_OUT = 5 * 60 * 1000
 const CONNECT_TIME_OUT = 5 * 1000
+
+function parseMsg(msg) {
+    const action = get(msg, 'data.action')
+    const message = get(msg, 'data.payload.message')
+    return {
+        action,
+        message,
+    }
+}
 class CloudBuild {
     constructor(git, options) {
         this.git = git
@@ -27,7 +37,13 @@ class CloudBuild {
             }
         })
         socket.on('connect', () => {
-            console.log('connect')
+            clearTimeout(this.timer)
+            const { id } = socket
+            log.success('云构建任务创建成功', `任务ID：${id}`)
+            socket.on(id, msg => {
+                const parsedMsg = parseMsg(msg)
+                log.success(parsedMsg.action, parsedMsg.message)
+            })
         })
         const disconnect = () => {
             clearTimeout(this.timer)
@@ -38,6 +54,16 @@ class CloudBuild {
             log.error('云构建服务连接超时，自动终止')
             disconnect
         }, CONNECT_TIME_OUT)
+
+        socket.on('disconnect', () => {
+            log.success('disconnect', '云构建任务断开')
+            disconnect()
+        })
+
+        socket.on('error', (err) => {
+            log.error('error', '云构建出错！', err)
+            disconnect()
+        })
     }
 }
 

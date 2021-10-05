@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
+    "lodash": "^4.17.21",
     "socket.io-client": "^2.0.0"
   }
 }
