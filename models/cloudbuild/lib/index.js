@@ -31,42 +31,58 @@ class CloudBuild {
     }
 
     init() {
-        const socket = io(WS_SERVER, {
-            query: {
-                repo: this.git.remote,
-                name: this.git.name,
-                branch: this.git.branch,
-                version: this.git.version,
-                buildCmd: this.buildCmd
+        return new Promise((resolve, reject) => {
+            const socket = io(WS_SERVER, {
+                query: {
+                    repo: this.git.remote,
+                    name: this.git.name,
+                    branch: this.git.branch,
+                    version: this.git.version,
+                    buildCmd: this.buildCmd
+                }
+            })
+            socket.on('connect', () => {
+                clearTimeout(this.timer)
+                const { id } = socket
+                log.success('云构建任务创建成功', `任务ID：${id}`)
+                socket.on(id, msg => {
+                    const parsedMsg = parseMsg(msg)
+                    log.success(parsedMsg.action, parsedMsg.message)
+                })
+                resolve()
+            })
+            const disconnect = () => {
+                clearTimeout(this.timer)
+                socket.disconnect()
+                socket.close()
             }
+            this.doTimeout(() => {
+                log.error('云构建服务连接超时，自动终止')
+                disconnect
+            }, CONNECT_TIME_OUT)
+            socket.on('disconnect', () => {
+                log.success('disconnect', '云构建任务断开')
+                disconnect()
+            })
+            socket.on('error', (err) => {
+                log.error('error', '云构建出错！', err)
+                disconnect()
+                reject(err)
+            })
+            this.socket = socket
         })
-        socket.on('connect', () => {
-            clearTimeout(this.timer)
-            const { id } = socket
-            log.success('云构建任务创建成功', `任务ID：${id}`)
-            socket.on(id, msg => {
+    }
+
+    build() {
+        return new Promise((resolve, reject) => {
+            this.socket.emit('build')
+            this.socket.on('build', (msg) => {
                 const parsedMsg = parseMsg(msg)
                 log.success(parsedMsg.action, parsedMsg.message)
             })
-        })
-        const disconnect = () => {
-            clearTimeout(this.timer)
-            socket.disconnect()
-            socket.close()
-        }
-        this.doTimeout(() => {
-            log.error('云构建服务连接超时，自动终止')
-            disconnect
-        }, CONNECT_TIME_OUT)
+            this.socket.on('building', () => {
 
-        socket.on('disconnect', () => {
-            log.success('disconnect', '云构建任务断开')
-            disconnect()
-        })
-
-        socket.on('error', (err) => {
-            log.error('error', '云构建出错！', err)
-            disconnect()
+            })
         })
     }
 }
