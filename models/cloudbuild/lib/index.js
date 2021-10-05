@@ -1,10 +1,12 @@
 'use strict';
 
 const io = require('socket.io-client')
+const log = require('@imooc-cli-dev-myf/log')
 
 const WS_SERVER = 'http://127.0.0.1:7001'
 // const WS_SERVER = 'http://book.youbaobao.xyz:7001'
-const TIME_OUT = 5 * 60
+const TIME_OUT = 5 * 60 * 1000
+const CONNECT_TIME_OUT = 5 * 1000
 class CloudBuild {
     constructor(git, options) {
         this.git = git
@@ -12,15 +14,30 @@ class CloudBuild {
         this.timeout = TIME_OUT
     }
 
+    doTimeout(fn, timeout) {
+        this.timer && clearTimeout(this.timer)
+        log.info('设置任务超时时间', `${timeout / 1000}秒`)
+        this.timer = setTimeout(fn, timeout)
+    }
+
     init() {
-        this.socket = io(WS_SERVER, {
+        const socket = io(WS_SERVER, {
             query: {
                 repo: this.git.remote,
             }
         })
-        this.socket.on('connect', () => {
+        socket.on('connect', () => {
             console.log('connect')
         })
+        const disconnect = () => {
+            clearTimeout(this.timer)
+            socket.disconnect()
+            socket.close()
+        }
+        this.doTimeout(() => {
+            log.error('云构建服务连接超时，自动终止')
+            disconnect
+        }, CONNECT_TIME_OUT)
     }
 }
 

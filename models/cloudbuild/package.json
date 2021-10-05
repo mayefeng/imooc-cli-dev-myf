@@ -24,6 +24,7 @@
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"
   },
   "dependencies": {
+    "@imooc-cli-dev-myf/log": "file:../../utils/log",
     "socket.io-client": "^2.0.0"
   }
 }
