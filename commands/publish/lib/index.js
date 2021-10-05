@@ -10,11 +10,12 @@ const Git = require('@imooc-cli-dev-myf/git')
 class PublishCommand extends Command {
     init() {
         // 处理参数
-        // console.log('publish', this._argv, this._cmd)
+        log.verbose('publish', this._argv, this._cmd)
         this.options = { 
             refreshServer: this._cmd.refreshServer,
             refreshToken: this._cmd.refreshToken,
             refreshOwner: this._cmd.refreshOwner,
+            buildCmd: this._cmd.buildCmd,
         }
     }
 

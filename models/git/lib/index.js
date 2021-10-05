@@ -67,7 +67,8 @@ class Git {
     constructor({name, version, dir}, { 
         refreshServer = false,
         refreshToken = false,
-        refreshOwner = false
+        refreshOwner = false,
+        buildCmd = '',
     }) {
         // 项目名称
         this.name = name
@@ -99,6 +100,8 @@ class Git {
         this.refreshOwner = refreshOwner
         // 本地开发分支
         this.branch = null
+        // 构建命令
+        this.buildCmd = buildCmd
     }
 
     async prepare() {
@@ -145,14 +148,20 @@ class Git {
 
     async publish() {
         await this.preparePublish()
-        const buildCmd = ''
         const cloudBuild = new CloudBuild(this, {
-            buildCmd,
+            buildCmd: this.buildCmd,
         })
     }
 
     preparePublish() {
-        
+        if (this.buildCmd) {
+            const buildCmdArray = this.buildCmd.split(' ')
+            if (!['npm', 'cnpm'].includes(buildCmdArray[0])) {
+                throw new Error('Build命令非法，必须使用npm或cnpm！')
+            }
+        } else {
+            this.buildCmd = 'npm run build'
+        }
     }
 
     async pullRemoteMasterAndBranch() {

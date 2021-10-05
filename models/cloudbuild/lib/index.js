@@ -1,8 +1,8 @@
 'use strict';
 
 class CloudBuild {
-    constructor(props) {
-        console.log('cloudBuild', props)
+    constructor(git, options) {
+        console.log('cloudBuild', options)
     }
 }
 
