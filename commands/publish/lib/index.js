@@ -29,6 +29,8 @@ class PublishCommand extends Command {
             await git.prepare()
             // 代码自动化提交
             await git.commit()
+            // 代码云共建+云发布
+            await git.publish()
             // 3.云构建和云发布
             const endTime = new Date().getTime()
             log.info('本次发布耗时：', Math.floor(endTime - startTime) / 1000 + '秒')

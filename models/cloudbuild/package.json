@@ -1,5 +1,5 @@
 {
-  "name": "cloudbuild",
+  "name": "@imooc-cli-dev-myf/cloudbuild",
   "version": "1.0.0",
   "description": "> TODO: description",
   "author": "mayefeng <mayefeng@163.com>",

@@ -27,6 +27,7 @@
     "url": "https://github.com/mayefeng/imooc-cli-dev-myf/issues"
   },
   "dependencies": {
+    "@imooc-cli-dev-myf/cloudbuild": "file:../../models/cloudbuild",
     "@imooc-cli-dev-myf/log": "file:../../utils/log",
     "@imooc-cli-dev-myf/utils": "file:../../utils/utils",
     "axios": "^0.22.0",

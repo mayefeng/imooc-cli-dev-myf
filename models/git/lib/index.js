@@ -12,6 +12,7 @@ const log = require('@imooc-cli-dev-myf/log')
 const { readFile, writeFile, spinnerStart } = require('@imooc-cli-dev-myf/utils');
 const Github = require('./Github');
 const Gitee = require('./Gitee');
+const CloudBuild = require('@imooc-cli-dev-myf/cloudbuild')
 
 const DEFAULT_CLI_HOME = '.imooc-cli-dev-myf'
 const GIT_ROOT_DIR = '.git'
@@ -140,6 +141,18 @@ class Git {
         await this.pullRemoteMasterAndBranch()
         // 6.将开发分支推送到远程仓库
         await this.pushRemoteRepo(this.branch)
+    }
+
+    async publish() {
+        await this.preparePublish()
+        const buildCmd = ''
+        const cloudBuild = new CloudBuild(this, {
+            buildCmd,
+        })
+    }
+
+    preparePublish() {
+        
     }
 
     async pullRemoteMasterAndBranch() {
