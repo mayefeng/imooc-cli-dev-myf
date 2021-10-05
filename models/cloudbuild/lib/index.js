@@ -1,8 +1,26 @@
 'use strict';
 
+const io = require('socket.io-client')
+
+const WS_SERVER = 'http://127.0.0.1:7001'
+// const WS_SERVER = 'http://book.youbaobao.xyz:7001'
+const TIME_OUT = 5 * 60
 class CloudBuild {
     constructor(git, options) {
-        console.log('cloudBuild', options)
+        this.git = git
+        this.buildCmd = options.buildCmd
+        this.timeout = TIME_OUT
+    }
+
+    init() {
+        this.socket = io(WS_SERVER, {
+            query: {
+                repo: this.git.remote,
+            }
+        })
+        this.socket.on('connect', () => {
+            console.log('connect')
+        })
     }
 }
 

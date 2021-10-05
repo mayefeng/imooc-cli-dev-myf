@@ -151,6 +151,7 @@ class Git {
         const cloudBuild = new CloudBuild(this, {
             buildCmd: this.buildCmd,
         })
+        cloudBuild.init()
     }
 
     preparePublish() {
