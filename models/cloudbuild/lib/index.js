@@ -9,7 +9,7 @@ const WS_SERVER = 'http://127.0.0.1:7001'
 const TIME_OUT = 5 * 60 * 1000
 const CONNECT_TIME_OUT = 5 * 1000
 
-const FAILED_CODE = ['prepare failed', 'download failed', 'install failed', 'build failed']
+const FAILED_CODE = ['prepare failed', 'download failed', 'install failed', 'build failed', 'pre-publish failed', 'publish failed']
 
 function parseMsg(msg) {
     const action = get(msg, 'data.action')
@@ -24,6 +24,7 @@ class CloudBuild {
         this.git = git
         this.buildCmd = options.buildCmd
         this.timeout = TIME_OUT
+        this.prod = options.prod
     }
 
     doTimeout(fn, timeout) {
@@ -46,7 +47,8 @@ class CloudBuild {
                     name: this.git.name,
                     branch: this.git.branch,
                     version: this.git.version,
-                    buildCmd: this.buildCmd
+                    buildCmd: this.buildCmd,
+                    prod: this.prod,
                 }
             })
             socket.on('connect', () => {
