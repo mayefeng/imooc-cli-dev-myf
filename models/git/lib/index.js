@@ -151,11 +151,13 @@ class Git {
         const cloudBuild = new CloudBuild(this, {
             buildCmd: this.buildCmd,
         })
-        await cloudBuild.init()
-        await cloudBuild.build()
+        // await cloudBuild.init()
+        // await cloudBuild.build()
     }
 
     preparePublish() {
+        log.info('开始进行云构建前代码检查')
+        const pkg = this.getPackageJson()
         if (this.buildCmd) {
             const buildCmdArray = this.buildCmd.split(' ')
             if (!['npm', 'cnpm'].includes(buildCmdArray[0])) {
@@ -164,6 +166,20 @@ class Git {
         } else {
             this.buildCmd = 'npm run build'
         }
+        const buildCmdArray = this.buildCmd.split(' ')
+        const lastCmd = buildCmdArray[buildCmdArray.length - 1]
+        if (!pkg.scripts || !Object.keys(pkg.scripts).includes(lastCmd)) {
+            throw new Error(this.buildCmd + '命令不存在！')
+        }
+        log.success('代码预检查通过')
+    }
+
+    getPackageJson() {
+        const pkgPath = path.resolve(this.dir, 'package.json')
+        if (!fs.existsSync(pkgPath)) {
+            throw new Error(`package.json 不存在！源码目录：${this.dir}`)
+        }
+        return fse.readJsonSync(pkgPath)
     }
 
     async pullRemoteMasterAndBranch() {
