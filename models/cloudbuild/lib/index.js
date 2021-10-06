@@ -32,6 +32,12 @@ class CloudBuild {
         this.timer = setTimeout(fn, timeout)
     }
 
+    async prepare() {
+        // 1.获取OSS文件
+        // 2.判断当前项目的OSS文件是否存在
+        // 3.如果存在且处于正式发布，则询问用户是否进行覆盖安装 
+    }
+
     init() {
         return new Promise((resolve, reject) => {
             const socket = io(WS_SERVER, {

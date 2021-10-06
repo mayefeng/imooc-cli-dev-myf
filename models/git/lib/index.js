@@ -21,6 +21,7 @@ const GIT_TOKEN_FILE = '.git_token'
 const GIT_OWN_FILE = '.git_own'
 const GIT_LOGIN_FILE = '.git_login'
 const GIT_IGNORE_FILE = '.gitignore'
+const GIT_PUBLISH_FILE = '.git_publish'
 
 const GITHUB = 'github'
 const GITEE = 'gitee'
@@ -63,12 +64,20 @@ const GIT_OWNER_TYPE_ONLY = [
     },
 ]
 
+const GIT_PUBLISH_TYPE = [
+    {
+        name: 'OSS',
+        value: 'oss'
+    }
+]
+
 class Git {
     constructor({name, version, dir}, { 
         refreshServer = false,
         refreshToken = false,
         refreshOwner = false,
         buildCmd = '',
+        prod = false
     }) {
         // 项目名称
         this.name = name
@@ -102,6 +111,10 @@ class Git {
         this.branch = null
         // 构建命令
         this.buildCmd = buildCmd
+        // 静态资源服务器类型
+        this.gitPublish = null
+        // 是否正式发布
+        this.prod = prod
     }
 
     async prepare() {
@@ -148,14 +161,18 @@ class Git {
 
     async publish() {
         await this.preparePublish()
+        console.log(this.prod)
         const cloudBuild = new CloudBuild(this, {
             buildCmd: this.buildCmd,
+            type: this.gitPublish,
+            prod: this.prod,
         })
+        await cloudBuild.prepare()
         // await cloudBuild.init()
         // await cloudBuild.build()
     }
 
-    preparePublish() {
+    async preparePublish() {
         log.info('开始进行云构建前代码检查')
         const pkg = this.getPackageJson()
         if (this.buildCmd) {
@@ -172,6 +189,21 @@ class Git {
             throw new Error(this.buildCmd + '命令不存在！')
         }
         log.success('代码预检查通过')
+        const gitPublishPath = this.createPath(GIT_PUBLISH_FILE)
+        let gitPublish = readFile(gitPublishPath)
+        if (!gitPublish) {
+            gitPublish = (await inquirer.prompt({
+                type: 'list',
+                choices: GIT_PUBLISH_TYPE,
+                message: '请选择您想要上传代码的平台',
+                name: 'gitPublish'
+            })).gitPublish
+            writeFile(gitPublishPath, gitPublish)
+            log.success('git publish类型写入成功', `${gitPublish} -> ${gitPublishPath}`)
+        } else {
+            log.success('git publish类型获取成功', gitPublish)
+        }
+        this.gitPublish = gitPublish
     }
 
     getPackageJson() {

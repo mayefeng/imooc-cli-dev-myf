@@ -16,6 +16,7 @@ class PublishCommand extends Command {
             refreshToken: this._cmd.refreshToken,
             refreshOwner: this._cmd.refreshOwner,
             buildCmd: this._cmd.buildCmd,
+            prod: this._cmd.prod,
         }
     }
 
