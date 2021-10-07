@@ -1,8 +1,10 @@
 'use strict';
 
 const io = require('socket.io-client')
-const log = require('@imooc-cli-dev-myf/log')
+const inquirer = require('inquirer')
 const get = require('lodash/get')
+const log = require('@imooc-cli-dev-myf/log')
+const request = require('@imooc-cli-dev-myf/request')
 
 const WS_SERVER = 'http://127.0.0.1:7001'
 // const WS_SERVER = 'http://book.youbaobao.xyz:7001'
@@ -34,9 +36,42 @@ class CloudBuild {
     }
 
     async prepare() {
-        // 1.获取OSS文件
-        // 2.判断当前项目的OSS文件是否存在
-        // 3.如果存在且处于正式发布，则询问用户是否进行覆盖安装 
+        // 判断是否处于正式发布
+        if (this.prod) {
+            // 1.获取OSS文件
+            const projectName = this.git.name;
+            const projectType = this.prod ? 'prod' : 'dev';
+            const ossProject = await request({
+                url: '/project/oss',
+                params: {
+                    name: projectName,
+                    type: projectType,
+                }
+            });
+            // 2.判断当前项目的OSS文件是否存在
+            if (ossProject.code === 0 && ossProject.data.length > 0) {
+                // 3.如果存在且处于正式发布，则询问用户是否进行覆盖安装 
+                const cover = (await inquirer.prompt({
+                    type: 'list',
+                    name: 'cover',
+                    choices: [
+                        {
+                            name: '覆盖发布',
+                            value: true,
+                        }, 
+                        {
+                            name: '放弃发布',
+                            value: false,
+                        }
+                    ],
+                    defaultValue: true,
+                    message: `OSS已存在 【${projectName}】 项目，是否强制覆盖发布？`
+                })).cover
+                if (!cover) {
+                    throw new Error('发布终止')
+                }
+            }
+        }
     }
 
     init() {

@@ -161,15 +161,14 @@ class Git {
 
     async publish() {
         await this.preparePublish()
-        console.log(this.prod)
         const cloudBuild = new CloudBuild(this, {
             buildCmd: this.buildCmd,
             type: this.gitPublish,
             prod: this.prod,
         })
         await cloudBuild.prepare()
-        await cloudBuild.init()
-        await cloudBuild.build()
+        // await cloudBuild.init()
+        // await cloudBuild.build()
     }
 
     async preparePublish() {
