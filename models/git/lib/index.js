@@ -183,6 +183,59 @@ class Git {
         if (ret) {
             await this.uploadTemplate()
         }
+        if (this.prod && ret) {
+            // 打tag
+            await this.checkTag()
+            // 切换分支到master
+            await this.checkoutBranch('master')
+            // 将开发分支代码合并到master
+            await this.mergeBranchToMaster()
+            // 将代码推送到远程master
+            await this.pushRemoteRepo('master')
+            // 删除本地开发分支
+            await this.deleteLocalBranch()
+            // 删除远程开发分支
+            await this.deleteRemoteBranch()
+        }
+    }
+
+    async deleteLocalBranch() {
+        log.info('开始删除本地开发分支', this.branch);
+        await this.git.deleteLocalBranch(this.branch);
+        log.success('删除本地分支成功', this.branch);
+    }
+
+    async deleteRemoteBranch() {
+      log.info('开始删除远程分支', this.branch);
+      await this.git.push(['origin', '--delete', this.branch]);
+      log.success('删除远程分支成功', this.branch);
+    }
+
+    async mergeBranchToMaster() {
+        log.info('开始合并代码', `[${this.branch}] -> [master]`)
+        await this.git.mergeFromTo(this.branch, 'master')
+        log.success('代码合并成功', `[${this.branch}] -> [master]`)
+    }
+
+    async checkTag() {
+        log.info('获取远程 tag 列表')
+        const tag = `${VERSION_RELEASE}/${this.version}`
+        const tagList = await this.getRemoteBranchList(VERSION_RELEASE)
+        if (tagList.includes(this.version)) {
+            log.success('远程 tag 已存在', tag)
+            await this.git.push(['origin', `:refs/tags/${tag}`])
+            log.success('远程 tag 已删除', tag)
+        }
+        const localTagList = await this.git.tags()
+        if (localTagList.all.includes(tag)) {
+            log.success('本地 tag 已存在', tag)
+            await this.git.tag(['-d', tag])
+            log.success('本地 tag 已删除', tag)
+        }
+        await this.git.addTag(tag)
+        log.success('本地 tag 创建成功', tag)
+        await this.git.pushTags('origin')
+        log.success('远程 tag 推送成功')        
     }
 
     async uploadTemplate() {
