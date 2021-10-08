@@ -17,6 +17,9 @@ class PublishCommand extends Command {
             refreshOwner: this._cmd.refreshOwner,
             buildCmd: this._cmd.buildCmd,
             prod: this._cmd.prod,
+            sshUser: this._cmd.sshUser,
+            sshIp: this._cmd.sshIp,
+            sshPath: this._cmd.sshPath,
         }
     }
 
