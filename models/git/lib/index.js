@@ -77,7 +77,10 @@ class Git {
         refreshToken = false,
         refreshOwner = false,
         buildCmd = '',
-        prod = false
+        prod = false,
+        sshUser = '',
+        sshIp = '',
+        sshPath = '',
     }) {
         // 项目名称
         this.name = name
@@ -115,6 +118,10 @@ class Git {
         this.gitPublish = null
         // 是否正式发布
         this.prod = prod
+        this.sshUser = sshUser
+        this.sshIp = sshIp
+        this.sshPath = sshPath
+        log.verbose('ssh config', this.sshUser, this.sshIp, this.sshPath,)
     }
 
     async prepare() {
@@ -170,7 +177,16 @@ class Git {
         })
         await cloudBuild.prepare()
         await cloudBuild.init()
-        await cloudBuild.build()
+        const ret = await cloudBuild.build()
+        if (ret) {
+            await this.uploadTemplate()
+        }
+    }
+
+    async uploadTemplate() {
+        if (this.sshUser && this.sshIp && this.sshPath) {
+            log.info('开始下载模板文件')
+        }
     }
 
     async preparePublish() {

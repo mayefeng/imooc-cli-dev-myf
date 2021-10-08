@@ -119,6 +119,7 @@ class CloudBuild {
     }
 
     build() {
+        let ret = true
         return new Promise((resolve, reject) => {
             this.socket.emit('build')
             this.socket.on('build', (msg) => {
@@ -128,12 +129,19 @@ class CloudBuild {
                     clearTimeout(this.timer)
                     this.socket.disconnect()
                     this.socket.close()
+                    ret = false
                 } else {
                     log.success(parsedMsg.action, parsedMsg.message)
                 }
             })
             this.socket.on('building', msg => {
                 console.log(msg)
+            })
+            this.socket.on('disconnect', () => {
+                resolve(ret)
+            })
+            this.socket.on('error', err => {
+                reject(err)
             })
         })
     }
