@@ -10,6 +10,7 @@ const terminalLink = require('terminal-link')
 const semver = require('semver')
 const log = require('@imooc-cli-dev-myf/log')
 const { readFile, writeFile, spinnerStart } = require('@imooc-cli-dev-myf/utils');
+const request = require('@imooc-cli-dev-myf/request')
 const Github = require('./Github');
 const Gitee = require('./Gitee');
 const CloudBuild = require('@imooc-cli-dev-myf/cloudbuild')
@@ -30,6 +31,7 @@ const REPO_OWNER_USER = 'user'
 const REPO_OWNER_ORG = 'org'
 const VERSION_RELEASE = 'release'
 const VERSION_DEVELOP = 'dev'
+const TEMPLATE_TEMP_DIR = 'oss'
 
 const GIT_SERVER_TYPE = [
     {
@@ -184,8 +186,44 @@ class Git {
     }
 
     async uploadTemplate() {
+        const TEMPLATE_FILE_NAME = 'index.html'
         if (this.sshUser && this.sshIp && this.sshPath) {
             log.info('开始下载模板文件')
+            let ossTemplateFile = await request({
+                url: '/oss/get',
+                params: {
+                    name: this.name,
+                    type: this.prod ? 'prod' : 'dev',
+                    file: TEMPLATE_FILE_NAME,
+                }
+            })
+            if (ossTemplateFile.code === 0 && ossTemplateFile.data) {
+                ossTemplateFile = ossTemplateFile.data
+            }
+            log.verbose('模板文件url', ossTemplateFile.url)
+            const response = await request({
+                url: ossTemplateFile.url,
+                method: 'get'
+            })
+            if (response) {
+                const ossTempDir = path.resolve(this.homePath, TEMPLATE_TEMP_DIR, `${this.name}@${this.version }`)
+                if (!fs.existsSync(ossTempDir)) {
+                    fse.mkdirpSync(ossTempDir)
+                } else {
+                    fse.emptyDirSync(ossTempDir)
+                }
+                const templateFilePath = path.resolve(ossTempDir, TEMPLATE_FILE_NAME)
+                fse.createFileSync(templateFilePath)
+                fs.writeFileSync(templateFilePath, response)
+                log.success('模板文件下载成功', templateFilePath)
+                log.info('开始上传模板文件至服务器')
+                // TO READ
+                const uploadCmd = `scp -r ${templateFilePath} ${this.sshUser}@${this.sshIp}:${this.sshPath}`
+                log.verbose('uploadCmd', uploadCmd)
+                const ret = require('child_process').execSync(uploadCmd)
+                log.success('模板文件上传成功')
+                fse.emptyDirSync(ossTempDir)
+            }
         }
     }
 
